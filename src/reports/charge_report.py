@@ -1,5 +1,6 @@
 from src.api.zaptec_api import ZaptecApi
 from src.models.zaptec_models import ChargingSessionResponse
+from src.services.email_service import EmailService
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -15,10 +16,8 @@ class ChargeReport:
     def __init__(self):
         load_dotenv()
         self.api = ZaptecApi()
-        self.smtp_username = os.getenv('SMTP_USERNAME')
-        self.smtp_password = os.getenv('SMTP_PASSWORD')
-        self.report_recipients = os.getenv('REPORT_RECIPIENTS').split(',')
         self.report_file = "data/reports/" + self._generate_report_filename()
+        self.email_service = EmailService()
         
     """Main method to generate and send the charge report"""
     def generate_report(self):
@@ -33,7 +32,7 @@ class ChargeReport:
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
             #Send the csv files as email attachments
-            #self.send_report_email(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            self.email_service.send_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
         
         except Exception as e:
             self._handle_error(e)
@@ -89,29 +88,6 @@ class ChargeReport:
         df_backen = df[df['Objekt-ID'].between('G5048', 'G5062')]
         df_backen.to_csv(f"data/reports/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv", sep=';', index=False, encoding='utf-8')
 
-
-    def send_report_email(self, filename: str, from_date: str, to_date: str):
-        sender = os.getenv('SMTP_USERNAME')
-        recipients = os.getenv('REPORT_RECIPIENTS').split(',')
-        
-        msg = MIMEMultipart()
-        msg['Subject'] = f'Laddningsrapport {from_date} - {to_date}'
-        msg['From'] = sender
-        msg['To'] = ', '.join(recipients)
-        
-        body = f'Här kommer laddningsrapporten för perioden {from_date} - {to_date}'
-        msg.attach(MIMEText(body, 'plain'))
-        
-        with open(filename, 'rb') as f:
-            attachment = MIMEApplication(f.read(), _subtype='csv')
-            attachment.add_header('Content-Disposition', 'attachment', filename=filename)
-            msg.attach(attachment)
-        
-        with smtplib.SMTP(os.getenv('SMTP_SERVER'), int(os.getenv('SMTP_PORT'))) as server:
-            server.starttls()
-            server.login(os.getenv('SMTP_USERNAME'), os.getenv('SMTP_PASSWORD'))
-            server.send_message(msg)
-
     def _generate_report_filename(self):
         return f"{os.getenv('REPORT_FILE', 'charge_report')}_{datetime.now().strftime('%Y%m%d')}.csv"
 
@@ -162,24 +138,8 @@ class ChargeReport:
     def _handle_error(self, error: Exception):
         """Handle any errors that occur during report generation"""
         error_message = f"Error details:\n{str(error)}\n\nTraceback:\n{traceback.format_exc()}"
-        self._send_error_email(error_message)
-
-    def _send_error_email(self, error_message: str):
-        """Send an email when an error occurs"""
-        try:
-            msg = MIMEMultipart()
-            msg['Subject'] = 'ERROR: Laddningsrapport generation failed'
-            msg['From'] = self.smtp_username
-            msg['To'] = ', '.join(self.report_recipients)
-            
-            body = f'An error occurred while generating the charging report:\n\n{error_message}'
-            msg.attach(MIMEText(body, 'plain'))
-            
-            with smtplib.SMTP(os.getenv('SMTP_HOST', 'localhost')) as server:
-                server.starttls()
-                server.login(self.smtp_username, self.smtp_password)
-                server.send_message(msg)
-                
+        try: 
+            self.email_service.send_error(error_message)
         except Exception as email_error:
             print(f"Failed to send error email: {str(email_error)}")
             print(f"Original error: {error_message}")
