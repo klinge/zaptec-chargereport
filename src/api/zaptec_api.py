@@ -2,7 +2,7 @@ import requests
 import urllib3
 import os
 from typing import Dict, List, Optional
-from models import ChargingSessionResponse, Installation, ChargersResponse, InstallationReport
+from src.models.zaptec_models import ChargingSessionResponse, Installation, ChargersResponse, InstallationReport
 
 urllib3.disable_warnings()
 

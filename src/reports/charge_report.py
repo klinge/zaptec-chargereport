@@ -1,9 +1,9 @@
-from ZaptecApi import ZaptecApi
+from src.api.zaptec_api import ZaptecApi
+from src.models.zaptec_models import ChargingSessionResponse
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from collections import defaultdict
 import pandas as pd
-from models import ChargingSessionResponse
 import os
 import smtplib
 from email.mime.text import MIMEText
@@ -18,7 +18,7 @@ class ChargeReport:
         self.smtp_username = os.getenv('SMTP_USERNAME')
         self.smtp_password = os.getenv('SMTP_PASSWORD')
         self.report_recipients = os.getenv('REPORT_RECIPIENTS').split(',')
-        self.report_file = "output/" + self._generate_report_filename()
+        self.report_file = "data/reports/" + self._generate_report_filename()
         
     """Main method to generate and send the charge report"""
     def generate_report(self):
@@ -33,7 +33,7 @@ class ChargeReport:
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
             #Send the csv files as email attachments
-            self.send_report_email(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            #self.send_report_email(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
         
         except Exception as e:
             self._handle_error(e)
@@ -87,7 +87,7 @@ class ChargeReport:
         df_signalen.to_csv(filename, sep=';', index=False, encoding='utf-8')
         #Filter out rows for BRF Bäcken and export to csv
         df_backen = df[df['Objekt-ID'].between('G5048', 'G5062')]
-        df_backen.to_csv(f"output/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv", sep=';', index=False, encoding='utf-8')
+        df_backen.to_csv(f"data/reports/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv", sep=';', index=False, encoding='utf-8')
 
 
     def send_report_email(self, filename: str, from_date: str, to_date: str):
