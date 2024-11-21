@@ -19,9 +19,14 @@ Create a `.env` file with the following variables:
 ZAPTEC_USERNAME=your_username
 ZAPTEC_PASSWORD=your_password
 ZAPTEC_INSTALLATION_ID=your_installation_id
-CHARGING_TARIFF=2.5
+CHARGING_TARIFF=your_charging_tariff(in monetary unit/kWh)
 SMTP_SERVER=smtp.example.com
 SMTP_PORT=587
 SMTP_USERNAME=your_email
 SMTP_PASSWORD=your_password
 REPORT_RECIPIENTS=recipient1@example.com,recipient2@example.com
+```
+Please replace the placeholders with your actual Zaptec credentials, SMTP server details, and report recipients.
+
+## Usage
+Run the script using: `python main.py`
