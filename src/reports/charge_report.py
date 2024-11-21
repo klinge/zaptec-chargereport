@@ -35,7 +35,6 @@ class ChargeReport:
     
         except Exception as e:
             self._handle_error(e)
-            raise
 
     def process_charging_data(self, sessions: ChargingSessionResponse, from_date_no_z: str, to_date_no_z: str) -> pd.DataFrame:
         ''' Takes data from the API and converts it to a properly formatted DataFrame'''
@@ -152,8 +151,9 @@ class ChargeReport:
     def _handle_error(self, error: Exception):
         """Handle any errors that occur during report generation"""
         error_message = f"Error details:\n{str(error)}\n\nTraceback:\n{traceback.format_exc()}"
+        self.logger.error(str(error))
+        self.logger.debug(error_message)
         try: 
             self.email_service.send_error(error_message)
         except Exception as email_error:
             self.logger.error(f"Failed to send error email: {str(email_error)}")
-            self.logger.debug(f"Original error: {error_message}")
