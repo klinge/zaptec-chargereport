@@ -37,12 +37,12 @@ class EmailService:
 
     def send_charge_report(self, filename: str, from_date: str, to_date: str):
         subject = f'Laddningsrapport {from_date} - {to_date}'
-        body = f'Här kommer laddningsrapporten för perioden {from_date} - {to_date}'
-        self._send_email(subject, self.recipients, body, filename)
+        body = f'Här kommer debiteringsunderlag för el förbrukad i laddstolpar för perioden {from_date} - {to_date}'
+        self._send_email(self.recipients, subject, body, filename)
 
     def send_error(self, error_message: str):
-        subject = 'ERROR: Laddningsrapport generation failed'
-        self._send_email(subject, error_message)
+        subject = 'ERROR: Charge report generation failed'
+        self._send_email("johan.klinge@gmail.com", subject, error_message)
 
     def _send_email(self, recipients: list[str], subject: str, body: str, attachment_path: str = None):
         """Internal method to handle email sending with or without attachments"""
@@ -65,7 +65,7 @@ class EmailService:
                 server.login(self.smtp_username, self.smtp_password)
                 server.send_message(msg)
             
-            self.logger
+            self.logger.info(f"Email with subject: {subject} sent successfully to {', '.join(recipients)}")
         
         except FileNotFoundError:
             self.logger.error(f"Report file not found: {attachment_path}")

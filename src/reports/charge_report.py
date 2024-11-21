@@ -17,8 +17,8 @@ class ChargeReport:
         self.report_file = "data/reports/" + self._generate_report_filename()
         self.email_service = EmailService()
         
-    """Main method to generate and send the charge report"""
     def generate_report(self):
+        """Main method to generate and send the charge report"""
         try:
             # Set report date to first and last day of previous month
             from_date, to_date = self._get_date_range()
@@ -31,14 +31,14 @@ class ChargeReport:
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
             #Send the csv files as email attachments
-            #self.send_email(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            self.send_emails(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
         
         except Exception as e:
             self._handle_error(e)
             raise
 
-    ''' Takes data from the API and converts it to a properly formatted DataFrame'''
     def process_charging_data(self, sessions: ChargingSessionResponse, from_date_no_z: str, to_date_no_z: str) -> pd.DataFrame:
+        ''' Takes data from the API and converts it to a properly formatted DataFrame'''
         df = pd.DataFrame([{
             'user_email': session.UserEmail,
             'user_name': session.UserFullName,
@@ -102,9 +102,9 @@ class ChargeReport:
             self.logger.error(f"Failed to write CSV file {filename}: {str(e)}")
             raise
 
-    def send_email(self, report_file: str, from_date_no_z: str, to_date_no_z: str) -> None:
+    def send_emails(self, report_file: str, from_date_no_z: str, to_date_no_z: str) -> None:
         try: 
-            self.email_service.send_report(report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            self.email_service.send_charge_report(report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
             self.logger.info(f"Email sent successfully to {self.email_service.recipients}")
         except Exception as e:
             self._handle_error(e)
