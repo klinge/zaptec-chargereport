@@ -30,19 +30,24 @@ class EmailService:
             raise ValueError("REPORT_RECIPIENTS environment variable is not set")
         self.recipients = recipients.split(',')
 
+        error_recipients = os.getenv('ERROR_RECIPIENTS')
+        if not error_recipients:
+            raise ValueError("ERROR_RECIPIENTS environment variable is not set")
+        self.error_recipients = error_recipients.split(',')
+
         self.smtp_timeout = int(os.getenv('SMTP_TIMEOUT', '15'))  # Default 15 seconds if not set
         
         self.logger.info("Initialized EmailService")
 
 
     def send_charge_report(self, filename: str, from_date: str, to_date: str):
-        subject = f'Laddningsrapport {from_date} - {to_date}'
-        body = f'Här kommer debiteringsunderlag för el förbrukad i laddstolpar för perioden {from_date} - {to_date}'
+        subject = f'BRF Signalen 1 - Laddningsrapport {from_date} - {to_date}'
+        body = f'Här kommer debiteringsunderlag för el förbrukad i laddstolpar för BRF Signalen 1. Underlaget avser perioden {from_date} - {to_date}'
         self._send_email(self.recipients, subject, body, filename)
 
     def send_error(self, error_message: str):
         subject = 'ERROR: Charge report generation failed'
-        self._send_email("johan.klinge@gmail.com", subject, error_message)
+        self._send_email(self.error_recipients, subject, error_message)
 
     def _send_email(self, recipients: list[str], subject: str, body: str, attachment_path: str = None):
         """Internal method to handle email sending with or without attachments"""
