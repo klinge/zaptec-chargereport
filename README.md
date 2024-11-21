@@ -27,6 +27,7 @@ SMTP_PASSWORD=your_password
 REPORT_RECIPIENTS=recipient1@example.com,recipient2@example.com
 ```
 Please replace the placeholders with your actual Zaptec credentials, SMTP server details, and report recipients.
+The file config.txt contains all the needed settings and can be edited and renamed to .env
 
 ## Usage
 Run the script using: `python main.py`
