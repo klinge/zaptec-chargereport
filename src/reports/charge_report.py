@@ -31,7 +31,7 @@ class ChargeReport:
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
             #Send the csv files as email attachments
-            self.send_emails(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
     
         except Exception as e:
             self._handle_error(e)
@@ -100,14 +100,6 @@ class ChargeReport:
             self.logger.info(f"Exported csv file: {filename_backen}")
         except (PermissionError, OSError) as e:
             self.logger.error(f"Failed to write CSV file {filename}: {str(e)}")
-            raise
-
-    def send_emails(self, report_file: str, from_date_no_z: str, to_date_no_z: str) -> None:
-        try: 
-            self.email_service.send_charge_report(report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
-            self.logger.info(f"Email sent successfully to {self.email_service.recipients}")
-        except Exception as e:
-            self.logger.error(f"Failed to send charge report: {str(e)}")
             raise
 
     def _generate_report_filename(self):
