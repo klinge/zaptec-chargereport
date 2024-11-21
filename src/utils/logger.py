@@ -19,7 +19,7 @@ def setup_logger():
     # File handler with current date
     log_file = f"data/logs/charge_report_{datetime.now().strftime('%Y%m%d')}.log"
     file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(logging.DEBUG)
     
     # Console handler
     console_handler = logging.StreamHandler()
