@@ -4,7 +4,6 @@ from src.services.email_service import EmailService
 from src.utils.logger import setup_logger
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from collections import defaultdict
 import pandas as pd
 import os
 import traceback
@@ -37,7 +36,17 @@ class ChargeReport:
             self._handle_error(e)
 
     def process_charging_data(self, sessions: ChargingSessionResponse, from_date_no_z: str, to_date_no_z: str) -> pd.DataFrame:
-        ''' Takes data from the API and converts it to a properly formatted DataFrame'''
+        """
+        Processes raw charging session data into a formatted DataFrame for reporting.
+    
+        Args:
+            sessions: Raw charging session data from Zaptec API
+            from_date_no_z: Start date without timezone in format YYYY-MM-DD
+            to_date_no_z: End date without timezone in format YYYY-MM-DD
+        
+        Returns:
+            DataFrame containing aggregated charging data per user with costs
+        """
         df = pd.DataFrame([{
             'user_email': session.UserEmail,
             'user_name': session.UserFullName,
@@ -79,7 +88,14 @@ class ChargeReport:
         self.logger.info(f"Created summary dataframe with {len(result_df)} rows")
         return result_df.sort_values('Objekt-ID')
 
-    def export_to_csv(self, df: pd.DataFrame, filename="charge-report.csv") -> None:        
+    def export_to_csv(self, df: pd.DataFrame, filename="charge-report.csv") -> None:
+        """
+        Exports charging data to CSV files, splitting data between different housing associations.
+    
+        Args:
+            df: DataFrame containing the charge report data
+            filename: Target filename for the CSV export
+        """    
         # Format numeric columns
         df[['Slutvärde', 'Förbrukning', 'Kostnad', 'Tariff']] = df[['Slutvärde', 'Förbrukning', 'Kostnad', 'Tariff']].round(2)
         try: 
@@ -107,7 +123,15 @@ class ChargeReport:
         return f"{os.getenv('REPORT_FILE', 'charge_report')}_{datetime.now().strftime('%Y%m%d')}.csv"
 
     def _get_date_range(self, include_z=True):
-        # Gets the first and last day of last month
+        """
+        Since reports are always for the previous month, this calculates the first and last day of the previous month.
+    
+        Args:
+            include_z: Whether to include 'Z' timezone suffix
+        
+        Returns:
+            Tuple of (from_date, to_date) formatted as ISO timestamps
+        """
         today = datetime.now()
         first_of_current = today.replace(day=1)
         last_of_previous = first_of_current - timedelta(days=1)
@@ -119,11 +143,30 @@ class ChargeReport:
         
         return from_date, to_date
 
-    def _calculate_duration_hours(self, start, end):
+    def _calculate_duration_hours(self, start: str, end: str):
+        """
+        Calculates charging duration in hours between two timestamps.
+    
+        Args:
+            start: Start timestamp of charging session
+            end: End timestamp of charging session
+        
+        Returns:
+            Float representing duration in hours
+        """
         duration = end - start
         return duration.total_seconds() / 3600
 
     def _format_objekt_id(self, device_name: str) -> str:
+        """
+        Formats a device name from the Zaptec API into a standardized object ID that is needed for reporting.
+    
+        Args:
+            device_name: Raw device name from Zaptec (format: "Plats XX")
+        
+        Returns:
+            Str: Formatted object ID (format: G50XX)
+        """
         # Extract the number from "Plats XX"
         number = device_name.split()[1]
         # Pad with leading zeros to ensure 2 digits
@@ -131,7 +174,18 @@ class ChargeReport:
         return f"G50{padded_number}"
 
     def _add_summary_row_for_brf_backen(self, df: pd.DataFrame, from_date_no_z: str, to_date_no_z: str) -> pd.DataFrame: 
-        ''' NOT USED: Adds a summary row for BRF Bäcken'''
+        """
+        Sums the power usage on chargers that belong to BRF Bäcken and adds a summary row for BRF Bäcken.
+        Currently not used in the report, but could be used in the future.
+
+        Args:
+            df: DataFrame containing the charge report data
+            from_date_no_z: Start date of the report
+            to_date_no_z: End date of the report
+        
+        Returns:
+            DataFrame: the original dataframe with an additional summary row (G6000) for BRF Bäcken.
+        """
         filtered_df = df[df['Objekt-ID'].between('G5048', 'G5062')]
         if not filtered_df.empty:
             summary_row = pd.DataFrame({
