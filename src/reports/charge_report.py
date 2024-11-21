@@ -45,7 +45,7 @@ class ChargeReport:
             to_date_no_z: End date without timezone in format YYYY-MM-DD
         
         Returns:
-            DataFrame containing aggregated charging data per user with costs
+            DataFrame: containing aggregated charging data per user with costs
         """
         df = pd.DataFrame([{
             'user_email': session.UserEmail,
