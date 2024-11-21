@@ -25,6 +25,10 @@ class EmailService:
         if not self.smtp_port:
             raise ValueError("SMTP_PORT environment variable is not set")
         
+        self.smtp_from = os.getenv('SMTP_FROM_EMAIL')
+        if not self.smtp_username:
+            raise ValueError("SMTP_USERNAME environment variable is not set")
+
         recipients = os.getenv('REPORT_RECIPIENTS')
         if not recipients:
             raise ValueError("REPORT_RECIPIENTS environment variable is not set")
@@ -54,7 +58,7 @@ class EmailService:
         try: 
             msg = MIMEMultipart()
             msg['Subject'] = subject
-            msg['From'] = self.smtp_username
+            msg['From'] = self.smtp_from
             msg['To'] = ', '.join(recipients)
             
             msg.attach(MIMEText(body, 'plain'))
