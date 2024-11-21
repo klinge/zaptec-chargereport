@@ -31,7 +31,7 @@ class ChargeReport:
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
             #Send the csv files as email attachments
-            self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            #self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
     
         except Exception as e:
             self._handle_error(e)
@@ -46,6 +46,8 @@ class ChargeReport:
             'energy': session.Energy,
             'duration': self._calculate_duration_hours(session.StartDateTime, session.EndDateTime)
         } for session in sessions.Data])
+        
+        self.logger.info(f"Processed {len(df)} charging sessions")
         
         # Group and aggregate data
         summary_df = df.groupby('user_email').agg({
@@ -74,7 +76,7 @@ class ChargeReport:
             'Enhet': 'kWh',
             'Kommentar': summary_df.apply(lambda row: f"{row['user_name']}({row['user_email']}), Total laddtid: {row['duration']}", axis=1)
         })
-        self.logger.info(f"Generated dataframe with {len(df)} rows")
+        self.logger.info(f"Created summary dataframe with {len(result_df)} rows")
         return result_df.sort_values('Objekt-ID')
 
     def export_to_csv(self, df: pd.DataFrame, filename="charge-report.csv") -> None:        
