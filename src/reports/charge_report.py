@@ -7,10 +7,6 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 import pandas as pd
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
 import traceback
 
 class ChargeReport:
@@ -27,18 +23,15 @@ class ChargeReport:
             # Set report date to first and last day of previous month
             from_date, to_date = self._get_date_range()
             from_date_no_z, to_date_no_z = self._get_date_range(include_z=False)
+            self.logger.info(f"Started generating monthly charge report for period: {from_date} - {to_date}")
             #Get data from the zaptec API
             sessions = self.api.get_charging_sessions(from_date, to_date)
-            self.logger.info("Retrieved data from Zaptec API")
             #Put all sessions in a dataframe and sum them per user
             summary_df = self.process_charging_data(sessions, from_date_no_z, to_date_no_z)
-            self.logger.info("Processed data into a dataframe")
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
-            self.logger.info("Exported data to CSV")
             #Send the csv files as email attachments
-            self.send_email(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
-            self.logger.info("Sent report via email")
+            #self.send_email(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
         
         except Exception as e:
             self._handle_error(e)
@@ -82,25 +75,39 @@ class ChargeReport:
             'Enhet': 'kWh',
             'Kommentar': summary_df.apply(lambda row: f"{row['user_name']}({row['user_email']}), Total laddtid: {row['duration']}", axis=1)
         })
+        self.logger.info(f"Generated dataframe with {len(df)} rows")
         return result_df.sort_values('Objekt-ID')
 
-    def export_to_csv(self, df: pd.DataFrame, filename="charge-report.csv"):        
+    def export_to_csv(self, df: pd.DataFrame, filename="charge-report.csv") -> None:        
         # Format numeric columns
         df[['Slutvärde', 'Förbrukning', 'Kostnad', 'Tariff']] = df[['Slutvärde', 'Förbrukning', 'Kostnad', 'Tariff']].round(2)
-        # Filter out rows for BRF Signalen and export to csv
-        df_signalen = df[~df['Objekt-ID'].between('G5048', 'G5062')]
-        df_signalen.to_csv(filename, sep=';', index=False, encoding='utf-8')
+        try: 
+            # Make sure the reports directory exists
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            # Filter out rows for BRF Signalen and export to csv
+            df_signalen = df[~df['Objekt-ID'].between('G5048', 'G5062')]
+            df_signalen.to_csv(filename, sep=';', index=False, encoding='utf-8')
+            self.logger.info(f"Exported csv file: {filename}")
+        except (PermissionError, OSError) as e:
+            self.logger.error(f"Failed to write CSV file {filename}: {str(e)}")
+            raise
+
         #Filter out rows for BRF Bäcken and export to csv
         df_backen = df[df['Objekt-ID'].between('G5048', 'G5062')]
-        df_backen.to_csv(f"data/reports/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv", sep=';', index=False, encoding='utf-8')
-
+        try:
+            filename_backen = f"data/reports/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv"
+            df_backen.to_csv(filename_backen, sep=';', index=False, encoding='utf-8')
+            self.logger.info(f"Exported csv file: {filename_backen}")
+        except (PermissionError, OSError) as e:
+            self.logger.error(f"Failed to write CSV file {filename}: {str(e)}")
+            raise
 
     def send_email(self, report_file: str, from_date_no_z: str, to_date_no_z: str) -> None:
         try: 
             self.email_service.send_report(report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            self.logger.info(f"Email sent successfully to {self.email_service.recipients}")
         except Exception as e:
             self._handle_error(e)
-            self.logger.error("Failed to send email: " + str(e))
             raise
 
     def _generate_report_filename(self):
