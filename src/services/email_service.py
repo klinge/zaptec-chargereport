@@ -34,32 +34,41 @@ class EmailService:
         
         self.logger.info("Initialized EmailService")
 
-    def send_report(self, filename: str, from_date: str, to_date: str):
-        try:
+
+    def send_charge_report(self, filename: str, from_date: str, to_date: str):
+        subject = f'Laddningsrapport {from_date} - {to_date}'
+        body = f'Här kommer laddningsrapporten för perioden {from_date} - {to_date}'
+        self._send_email(subject, self.recipients, body, filename)
+
+    def send_error(self, error_message: str):
+        subject = 'ERROR: Laddningsrapport generation failed'
+        self._send_email(subject, error_message)
+
+    def _send_email(self, recipients: list[str], subject: str, body: str, attachment_path: str = None):
+        """Internal method to handle email sending with or without attachments"""
+        try: 
             msg = MIMEMultipart()
-            msg['Subject'] = f'Laddningsrapport {from_date} - {to_date}'
+            msg['Subject'] = subject
             msg['From'] = self.smtp_username
-            msg['To'] = ', '.join(self.recipients)
+            msg['To'] = ', '.join(recipients)
             
-            body = f'Här kommer laddningsrapporten för perioden {from_date} - {to_date}'
             msg.attach(MIMEText(body, 'plain'))
             
-            with open(filename, 'rb') as f:
-                attachment = MIMEApplication(f.read(), _subtype='csv')
-                attachment.add_header('Content-Disposition', 'attachment', filename=filename)
-                msg.attach(attachment)
+            if attachment_path:
+                with open(attachment_path, 'rb') as f:
+                    attachment = MIMEApplication(f.read(), _subtype='csv')
+                    attachment.add_header('Content-Disposition', 'attachment', filename=attachment_path)
+                    msg.attach(attachment)
             
-            with smtplib.SMTP(host=self.smtp_server, 
-                            port=self.smtp_port, 
-                            timeout=self.smtp_timeout) as server:
+            with smtplib.SMTP(host=self.smtp_server, port=self.smtp_port, timeout=self.smtp_timeout) as server:
                 server.starttls()
                 server.login(self.smtp_username, self.smtp_password)
                 server.send_message(msg)
-
-            self.logger.info(f"Email sent successfully to {', '.join(self.recipients)}")
+            
+            self.logger
         
         except FileNotFoundError:
-            self.logger.error(f"Report file not found: {filename}")
+            self.logger.error(f"Report file not found: {attachment_path}")
             raise
         except smtplib.SMTPAuthenticationError:
             self.logger.error("SMTP authentication failed")
@@ -71,16 +80,5 @@ class EmailService:
             self.logger.error(f"Unexpected error sending report: {str(e)}")
             raise
 
+        
 
-    def send_error(self, error_message: str):
-        msg = MIMEMultipart()
-        msg['Subject'] = 'ERROR: Laddningsrapport generation failed'
-        msg['From'] = self.smtp_username
-        msg['To'] = ', '.join(self.recipients)
-        
-        msg.attach(MIMEText(error_message, 'plain'))
-        
-        with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-            server.starttls()
-            server.login(self.smtp_username, self.smtp_password)
-            server.send_message(msg)
