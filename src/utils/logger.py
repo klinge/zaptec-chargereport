@@ -8,7 +8,13 @@ def setup_logger():
     
     # Configure logger
     logger = logging.getLogger('zaptec-chargereport')
+
+    # If logger already has handlers, assume it's configured and return
+    if logger.hasHandlers():
+        return logger
+    
     logger.setLevel(logging.INFO)
+    logger.propagate = False  # Prevent log propagation
     
     # File handler with current date
     log_file = f"data/logs/charge_report_{datetime.now().strftime('%Y%m%d')}.log"

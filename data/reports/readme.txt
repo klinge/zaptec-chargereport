@@ -1,0 +1,1 @@
+A folder for the reports the application generates
