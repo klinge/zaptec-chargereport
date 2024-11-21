@@ -1,15 +1,24 @@
 # Environment variables needed
 # Update and rename the file to .env
+
+# Zaptec settings
 ZAPTEC_USERNAME=your_username
 ZAPTEC_PASSWORD=your_password
 ZAPTEC_INSTALLATION_ID=your_installation_id
+
+#General report settings
 CHARGING_TARIFF="your tariff"
 REPORT_FILE="your filename"
+
+# SMTP settings
 SMTP_SERVER="smtp.example.com"
 SMTP_PORT="your port"
-SMTP_USERNAME="your email"
+SMTP_USERNAME="your username"
 SMTP_PASSWORD="your password"
+SMTP_FROM_EMAIL="your email"
 SMTP_TIMEOUT="timeout in seconds"
+
+# Email recipient settings
 REPORT_RECIPIENTS="comma separated list of email addresses"
 REPORT_RECIPIENTS_BACKEN="comma separated list of email addresses"
 ERROR_RECIPIENTS="comma separated list of email addresses that should recieve emails if report generation fails"
