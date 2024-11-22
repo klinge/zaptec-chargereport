@@ -1,6 +1,7 @@
 import requests
 import urllib3
 import os
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from src.models.zaptec_models import ChargingSessionResponse, Installation, ChargersResponse, InstallationReport
 
@@ -13,7 +14,9 @@ class ZaptecApi:
         self.password = os.getenv('ZAPTEC_PASSWORD')
         self.installation_id = os.getenv('ZAPTEC_INSTALLATION_ID')
         self.access_token: Optional[str] = None
-    
+        self.session = requests.Session()
+        self.session.verify = False
+
     def get_auth_token(self) -> str:
         """
         Authenticate with Zaptec API and obtain access token.
@@ -35,11 +38,10 @@ class ZaptecApi:
             'password': self.password
         }
 
-        response = requests.post(
+        response = self.session.post(
             f'{self.base_url}/oauth/token',
             headers=headers,
-            data=data,
-            verify=False
+            data=data
         )
 
         response.raise_for_status()
@@ -49,8 +51,9 @@ class ZaptecApi:
             raise ValueError("No access token in response")
         
         self.access_token = token_data['access_token']
+        self.token_expiry = datetime.now() + timedelta(seconds=token_data['expires_in'])
         return token_data
-    
+
     def get_headers(self) -> Dict[str, str]:
         """
         Get HTTP headers with authentication token for API requests.
@@ -61,7 +64,7 @@ class ZaptecApi:
         Note:
             Automatically fetches new auth token if none exists
         """
-        if not self.access_token:
+        if not self.is_token_valid():
             self.get_auth_token()
         
         return {
@@ -71,7 +74,7 @@ class ZaptecApi:
     
     def get_installation(self) -> List[Installation]:
         headers = self.get_headers()
-        response = requests.get(
+        response = self.session.get(
             f'{self.base_url}/api/installation',
             headers=headers,
             verify=False
@@ -88,7 +91,7 @@ class ZaptecApi:
             ID, name, status, and configuration
         """
         headers = self.get_headers()
-        response = requests.get(
+        response = self.session.get(
             f'{self.base_url}/api/chargers',
             headers=headers,
             verify=False
@@ -115,8 +118,8 @@ class ZaptecApi:
             'To': to_date,
             'DetailLevel': 0
         }
-        
-        response = requests.get(
+
+        response = self.session.get(
             f'{self.base_url}/api/chargehistory',
             headers=headers,
             params=params,
@@ -155,7 +158,7 @@ class ZaptecApi:
             "groupBy": 0
         }
 
-        response = requests.post(
+        response = self.session.post(
             f'{self.base_url}/api/chargehistory/installationreport',
             headers=headers,
             json=payload,
@@ -165,5 +168,16 @@ class ZaptecApi:
         response.raise_for_status()
         return InstallationReport.model_validate(response.json())
 
+    def is_token_valid(self) -> bool:
+        if not self.access_token or not self.token_expiry:
+            return False
+        # Add buffer time (e.g., 2 minutes) to prevent edge cases
+        return datetime.now() < (self.token_expiry - timedelta(minutes=2))
 
+    #Enable context manager support
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.session.close()
 

@@ -12,7 +12,6 @@ class ChargeReport:
     def __init__(self):
         load_dotenv()
         self.logger = setup_logger()
-        self.api = ZaptecApi()
         self.report_file = "data/reports/" + self._generate_report_filename()
         self.email_service = EmailService()
         
@@ -24,13 +23,14 @@ class ChargeReport:
             from_date_no_z, to_date_no_z = self._get_date_range(include_z=False)
             self.logger.info(f"Started generating monthly charge report for period: {from_date} - {to_date}")
             #Get data from the zaptec API
-            sessions = self.api.get_charging_sessions(from_date, to_date)
+            with ZaptecApi() as api:
+                sessions = api.get_charging_sessions(from_date, to_date)
             #Put all sessions in a dataframe and sum them per user
             summary_df = self.process_charging_data(sessions, from_date_no_z, to_date_no_z)
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
             #Send the csv files as email attachments
-            self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            #self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
     
         except Exception as e:
             self._handle_error(e)
