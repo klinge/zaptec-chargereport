@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 def main():
     load_dotenv()
 
-    #report = MonthlySummaryReport()
-    #report.generate_report()
+    report = MonthlySummaryReport()
+    report.generate_report()
 
     invoice = InvoicingReport()
     invoice.generate_report()
