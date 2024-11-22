@@ -60,8 +60,6 @@ class EmailService:
         if not summary_recipients:
             raise ValueError("SUMMARY_RECIPIENTS environment variable is not set")
         subject = f"BRF Signalen 1 - Laddningsstatistik för {month}"
-        print(body)
-        exit()
 
         self._send_email(summary_recipients, subject, body, content_type='html')
 
