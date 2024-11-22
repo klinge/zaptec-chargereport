@@ -58,6 +58,8 @@ class EmailService:
         summary_recipients = os.getenv('SUMMARY_RECIPIENTS')
         if not summary_recipients:
             raise ValueError("SUMMARY_RECIPIENTS environment variable is not set")
+        
+        summary_recipients = summary_recipients.split(',')
         subject = f"BRF Signalen 1 - Laddningsstatistik för {month}"
 
         self._send_email(summary_recipients, subject, body, content_type='html')
@@ -82,14 +84,12 @@ class EmailService:
         Note:
             Uses SMTP configuration from environment variables
         """
-        mail_to = ', '.join(recipients)
-
         try:             
             # construct email
             msg = EmailMessage()
             msg['Subject'] = subject
             msg['From'] = self.smtp_from
-            msg['To'] = mail_to
+            msg['To'] = ', '.join(recipients)
             msg.set_content(body, subtype=content_type)
      
             if attachment_path:
