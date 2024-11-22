@@ -1,7 +1,6 @@
 from src.utils.logger import setup_logger
 import os
 import smtplib
-from email.mime.application import MIMEApplication
 from email.message import EmailMessage
 
 class EmailService:
@@ -93,11 +92,9 @@ class EmailService:
             msg.set_content(body, subtype=content_type)
      
             if attachment_path:
-                with open(attachment_path, 'rb') as f:
-                    attachment = MIMEApplication(f.read(), _subtype='csv')
-                    attachment.add_header('Content-Disposition', 'attachment', filename=attachment_path)
-                    msg.set_attachment(attachment)
-            
+                with open(attachment_path, 'rb') as fp:
+                    msg.add_attachment(fp.read(), maintype='text', subtype='csv', filename=attachment_path)
+
             with smtplib.SMTP(host=self.smtp_server, port=self.smtp_port, timeout=self.smtp_timeout) as server:
                 server.starttls()
                 server.login(self.smtp_username, self.smtp_password)
