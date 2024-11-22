@@ -84,22 +84,23 @@ class EmailService:
             Uses SMTP configuration from environment variables
         """
         try: 
-            msg = MIMEMultipart()
-            msg['Subject'] = subject
-            msg['From'] = self.smtp_from
-            msg['To'] = ', '.join(recipients)
-            
-            msg.attach(MIMEText(body, content_type))
-            
-            if attachment_path:
-                with open(attachment_path, 'rb') as f:
-                    attachment = MIMEApplication(f.read(), _subtype='csv')
-                    attachment.add_header('Content-Disposition', 'attachment', filename=attachment_path)
-                    msg.attach(attachment)
-            
             with smtplib.SMTP(host=self.smtp_server, port=self.smtp_port, timeout=self.smtp_timeout) as server:
                 server.starttls()
                 server.login(self.smtp_username, self.smtp_password)
+            
+                msg = MIMEMultipart()
+                msg['Subject'] = subject
+                msg['From'] = self.smtp_from
+                msg['To'] = ', '.join(recipients)
+            
+                msg.attach(MIMEText(body, content_type))
+            
+                if attachment_path:
+                    with open(attachment_path, 'rb') as f:
+                        attachment = MIMEApplication(f.read(), _subtype='csv')
+                        attachment.add_header('Content-Disposition', 'attachment', filename=attachment_path)
+                        msg.attach(attachment)
+            
                 server.send_message(msg)
             
             self.logger.info(f"Email with subject: {subject} sent successfully to {', '.join(recipients)}")
