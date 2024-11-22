@@ -20,7 +20,7 @@ class InvoicingReport:
             # Set report date to first and last day of previous month
             from_date, to_date, month_name = get_previous_month_range(include_z=True)
             from_date_no_z, to_date_no_z, month_name = get_previous_month_range(include_z=False)
-            self.logger.info(f"Started generating monthly charge report for period: {from_date} - {to_date}")
+            self.logger.info(f"Started generating invoicing report for period: {from_date} - {to_date}")
             #Get data from the zaptec API
             with ZaptecApi() as api:
                 sessions = api.get_charging_sessions(from_date, to_date)
