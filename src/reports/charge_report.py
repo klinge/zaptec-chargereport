@@ -30,7 +30,7 @@ class ChargeReport:
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
             #Send the csv files as email attachments
-            #self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
     
         except Exception as e:
             self._handle_error(e)

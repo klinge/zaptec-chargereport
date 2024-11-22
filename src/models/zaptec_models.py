@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
@@ -197,6 +197,6 @@ class InstallationReport(BaseModel):
     InstallationCity: str
     InstallationTimeZone: str
     GroupedBy: str
-    Fromdate: datetime
-    Enddate: datetime
-    totalUserChargerReportModel: list[TotalUserChargerReport]
+    Fromdate: str
+    Enddate: str
+    totalUserChargerReportModel: List[TotalUserChargerReport]
