@@ -1,8 +1,7 @@
-from src.reports.charge_report import ChargeReport
-from src.api.zaptec_api import ZaptecApi
+from src.reports.invoicing_report import InvoicingReport
 
 def main():
-    report = ChargeReport()
+    report = InvoicingReport()
     report.generate_report()
 
     #with ZaptecApi() as api:

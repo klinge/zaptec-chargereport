@@ -8,7 +8,7 @@ import pandas as pd
 import os
 import traceback
 
-class ChargeReport:
+class InvoicingReport:
     def __init__(self):
         load_dotenv()
         self.logger = setup_logger()
@@ -98,12 +98,14 @@ class ChargeReport:
         """    
         # Format numeric columns
         df[['Slutvärde', 'Förbrukning', 'Kostnad', 'Tariff']] = df[['Slutvärde', 'Förbrukning', 'Kostnad', 'Tariff']].round(2)
+        
+        # Make csv report for BRF Signalen
         try: 
             # Make sure the reports directory exists
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-            # Filter out rows for BRF Signalen and export to csv
+            # Filter out rows for BRF Signalen based on parking lot numbers
             df_signalen = df[~df['Objekt-ID'].between('G5048', 'G5062')]
-            df_signalen.to_csv(filename, sep=';', index=False, encoding='utf-8')
+            df_signalen.to_csv(path_or_buf=filename, sep=';', index=False, encoding='utf-8')
             self.logger.info(f"Exported csv file: {filename}")
         except (PermissionError, OSError) as e:
             self.logger.error(f"Failed to write CSV file {filename}: {str(e)}")
@@ -113,10 +115,10 @@ class ChargeReport:
         df_backen = df[df['Objekt-ID'].between('G5048', 'G5062')]
         try:
             filename_backen = f"data/reports/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv"
-            df_backen.to_csv(filename_backen, sep=';', index=False, encoding='utf-8')
+            df_backen.to_csv(path_or_buf=filename_backen, sep=';', index=False, encoding='utf-8')
             self.logger.info(f"Exported csv file: {filename_backen}")
         except (PermissionError, OSError) as e:
-            self.logger.error(f"Failed to write CSV file {filename}: {str(e)}")
+            self.logger.error(msg=f"Failed to write CSV file {filename}: {str(e)}")
             raise
 
     def _generate_report_filename(self):
@@ -205,7 +207,7 @@ class ChargeReport:
         return df.sort_values('Objekt-ID')
 
     def _handle_error(self, error: Exception):
-        """Handle any errors that occur during report generation"""
+        """Handle any errors that occur during report generation. Tries to send an email notification. """
         error_message = f"Error details:\n{str(error)}\n\nTraceback:\n{traceback.format_exc()}"
         self.logger.error(str(error))
         self.logger.debug(error_message)
