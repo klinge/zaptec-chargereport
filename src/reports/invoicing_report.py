@@ -2,7 +2,7 @@ from src.api.zaptec_api import ZaptecApi
 from src.models.zaptec_models import ChargingSessionResponse
 from src.services.email_service import EmailService
 from src.utils.logger import setup_logger
-from dotenv import load_dotenv
+from src.utils.dateutils import get_previous_month_range
 from datetime import datetime, timedelta
 import pandas as pd
 import os
@@ -10,7 +10,6 @@ import traceback
 
 class InvoicingReport:
     def __init__(self):
-        load_dotenv()
         self.logger = setup_logger()
         self.report_file = "data/reports/" + self._generate_report_filename()
         self.email_service = EmailService()
@@ -19,8 +18,8 @@ class InvoicingReport:
         """Main method to generate and send the charge report"""
         try:
             # Set report date to first and last day of previous month
-            from_date, to_date = self._get_date_range()
-            from_date_no_z, to_date_no_z = self._get_date_range(include_z=False)
+            from_date, to_date, month_name = get_previous_month_range(include_z=True)
+            from_date_no_z, to_date_no_z, month_name = get_previous_month_range(include_z=False)
             self.logger.info(f"Started generating monthly charge report for period: {from_date} - {to_date}")
             #Get data from the zaptec API
             with ZaptecApi() as api:
@@ -123,27 +122,6 @@ class InvoicingReport:
 
     def _generate_report_filename(self):
         return f"{os.getenv('REPORT_FILE', 'charge_report')}_{datetime.now().strftime('%Y%m%d')}.csv"
-
-    def _get_date_range(self, include_z=True):
-        """
-        Since reports are always for the previous month, this calculates the first and last day of the previous month.
-    
-        Args:
-            include_z: Whether to include 'Z' timezone suffix
-        
-        Returns:
-            Tuple of (from_date, to_date) formatted as ISO timestamps
-        """
-        today = datetime.now()
-        first_of_current = today.replace(day=1)
-        last_of_previous = first_of_current - timedelta(days=1)
-        first_of_previous = last_of_previous.replace(day=1)
-        
-        suffix = "Z" if include_z else ""
-        from_date = first_of_previous.strftime(f"%Y-%m-%dT00:00:00.001{suffix}")
-        to_date = last_of_previous.strftime(f"%Y-%m-%dT23:59:59.999{suffix}")
-        
-        return from_date, to_date
 
     def _calculate_duration_hours(self, start: str, end: str):
         """

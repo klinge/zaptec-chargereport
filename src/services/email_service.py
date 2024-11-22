@@ -29,39 +29,69 @@ class EmailService:
         if not self.smtp_username:
             raise ValueError("SMTP_USERNAME environment variable is not set")
 
-        recipients = os.getenv('REPORT_RECIPIENTS')
-        if not recipients:
-            raise ValueError("REPORT_RECIPIENTS environment variable is not set")
-        self.recipients = recipients.split(',')
-
-        error_recipients = os.getenv('ERROR_RECIPIENTS')
-        if not error_recipients:
-            raise ValueError("ERROR_RECIPIENTS environment variable is not set")
-        self.error_recipients = error_recipients.split(',')
-
         self.smtp_timeout = int(os.getenv('SMTP_TIMEOUT', '15'))  # Default 15 seconds if not set
         
         self.logger.info("Initialized EmailService")
 
 
     def send_charge_report(self, filename: str, from_date: str, to_date: str):
+        recipients = os.getenv('INVOICING_RECIPIENTS')
+        if not recipients:
+            raise ValueError("INVOICING_RECIPIENTS environment variable is not set")
+        
+        recipients = recipients.split(',')
         subject = f'BRF Signalen 1 - Laddningsrapport {from_date} - {to_date}'
         body = f'Här kommer debiteringsunderlag för el förbrukad i laddstolpar för BRF Signalen 1. Underlaget avser perioden {from_date} - {to_date}'
-        self._send_email(self.recipients, subject, body, filename)
+       
+        self._send_email(recipients, subject, body, filename, content_type='plain')
 
     def send_error(self, error_message: str):
+        error_recipients = os.getenv('ERROR_RECIPIENTS')
+        if not error_recipients:
+            raise ValueError("ERROR_RECIPIENTS environment variable is not set")
+        
+        error_recipients = error_recipients.split(',')
         subject = 'ERROR: Charge report generation failed'
-        self._send_email(self.error_recipients, subject, error_message)
+        
+        self._send_email(error_recipients, subject, error_message, content_type='plain')
 
-    def _send_email(self, recipients: list[str], subject: str, body: str, attachment_path: str = None):
-        """Internal method to handle email sending with or without attachments"""
+    def send_summary_report(self, body: str, month: str):
+        summary_recipients = os.getenv('SUMMARY_RECIPIENTS')
+        if not summary_recipients:
+            raise ValueError("SUMMARY_RECIPIENTS environment variable is not set")
+        subject = f"BRF Signalen 1 - Laddningsstatistik för {month}"
+        print(body)
+        exit()
+
+        self._send_email(summary_recipients, subject, body, content_type='html')
+
+    def _send_email(self, recipients: list[str], subject: str, body: str, attachment_path: str = None, content_type: str = 'plain'):
+        """
+        Internal method to send emails with configurable content type and optional attachments.
+
+        Args:
+            recipients: List of email addresses to send to
+            subject: Email subject line
+            body: Email body content
+            attachment_path: Optional path to file attachment (default: None)
+            content_type: Type of email content - 'plain' or 'html' (default: 'plain')
+
+        Raises:
+            FileNotFoundError: If attachment file cannot be found
+            smtplib.SMTPAuthenticationError: If SMTP authentication fails
+            smtplib.SMTPException: If email sending fails
+            Exception: For other unexpected errors
+
+        Note:
+            Uses SMTP configuration from environment variables
+        """
         try: 
             msg = MIMEMultipart()
             msg['Subject'] = subject
             msg['From'] = self.smtp_from
             msg['To'] = ', '.join(recipients)
             
-            msg.attach(MIMEText(body, 'plain'))
+            msg.attach(MIMEText(body, content_type))
             
             if attachment_path:
                 with open(attachment_path, 'rb') as f:
