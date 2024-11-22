@@ -27,12 +27,10 @@ class ZaptecApi(BaseApi):
             ChargersResponse: Object containing details like
             ID, name, status, and configuration
         """
-        headers = self.get_headers()
         response = self._make_request(
             'GET',
             endpoint='/api/chargers'
         )
-        response.raise_for_status()
         return ChargersResponse.model_validate(response.json())
     
     def get_charging_sessions(self, from_date: str, to_date: str) -> ChargingSessionResponse:
@@ -64,7 +62,7 @@ class ZaptecApi(BaseApi):
         for session in jsonResponse["Data"]:
             session.pop('SignedSession', None)
         
-        return ChargingSessionResponse.model_validate(response.json())
+        return ChargingSessionResponse.model_validate(obj=jsonResponse)
     
 
     def get_installation_report(self, from_date: str, to_date: str) -> InstallationReport:
