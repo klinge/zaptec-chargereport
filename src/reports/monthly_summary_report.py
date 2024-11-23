@@ -19,7 +19,7 @@ class MonthlySummaryReport:
 
     def get_data_for_report(self) -> InstallationReport:
         from_date, to_date, self.month_name = get_previous_month_range(include_z=False)
-        self.logger.info(f"Started generating summary report for period: {from_date} - {to_date}")
+        self.logger.info(f"---Started generating summary report for period: {from_date} - {to_date}")
         
         #Get data from the zaptec API
         with ZaptecApi() as api:
