@@ -97,7 +97,9 @@ class BaseApi:
                 headers=headers, 
                 **kwargs)
         
+        self.logger.debug(f"Response: {response.status_code} {response.text}. Endpoint: {endpoint}")
         response.raise_for_status()
+        
         return response
     
     #Enable context manager support

@@ -3,6 +3,7 @@ from src.models.zaptec_models import InstallationReport
 from src.services.email_service import EmailService
 from src.utils.logger import setup_logger
 from src.utils.dateutils import get_previous_month_range
+from src.utils.error_handler import handle_error
 import pandas as pd
 from typing import NoReturn, Optional
 
@@ -13,9 +14,12 @@ class MonthlySummaryReport:
         self.month_name: Optional[str] = None
     
     def generate_report(self) -> None:
-        data = self.get_data_for_report()
-        df = self.generate_summary_report(data)
-        self.send_report(df)
+        try: 
+            data = self.get_data_for_report()
+            df = self.generate_summary_report(data)
+            self.send_report(df)
+        except Exception as e:
+            handle_error(e, self.logger, self.email_service)
 
     def get_data_for_report(self) -> InstallationReport:
         from_date, to_date, self.month_name = get_previous_month_range(include_z=False)

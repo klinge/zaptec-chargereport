@@ -3,10 +3,10 @@ from src.models.zaptec_models import ChargingSessionResponse
 from src.services.email_service import EmailService
 from src.utils.logger import setup_logger
 from src.utils.dateutils import get_previous_month_range
-from datetime import datetime, timedelta
+from src.utils.error_handler import handle_error
+from datetime import datetime
 import pandas as pd
 import os
-import traceback
 
 class InvoicingReport:
     def __init__(self):
@@ -32,7 +32,7 @@ class InvoicingReport:
             self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
     
         except Exception as e:
-            self._handle_error(e)
+            handle_error(e, self.logger, self.email_service)
 
     def process_charging_data(self, sessions: ChargingSessionResponse, from_date_no_z: str, to_date_no_z: str) -> pd.DataFrame:
         """
@@ -183,13 +183,3 @@ class InvoicingReport:
             })
             df = pd.concat([df, summary_row], ignore_index=True)
         return df.sort_values('Objekt-ID')
-
-    def _handle_error(self, error: Exception):
-        """Handle any errors that occur during report generation. Tries to send an email notification. """
-        error_message = f"Error details:\n{str(error)}\n\nTraceback:\n{traceback.format_exc()}"
-        self.logger.error(str(error))
-        self.logger.debug(error_message)
-        try: 
-            self.email_service.send_error(error_message)
-        except Exception as email_error:
-            self.logger.error(f"Failed to send error email: {str(email_error)}")
