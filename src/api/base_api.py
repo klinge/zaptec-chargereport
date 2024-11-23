@@ -2,6 +2,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+from src.utils.logger import setup_logger
 
 class BaseApi:
     def __init__(self, base_url: str):
@@ -13,6 +14,7 @@ class BaseApi:
         self.token_expiry: Optional[datetime] = None
         self.session = requests.Session()
         self.session.verify = False
+        self.logger = setup_logger()
 
     def get_auth_token(self) -> str:
         """

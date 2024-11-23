@@ -13,6 +13,7 @@ class ZaptecApi(BaseApi):
 
     def get_installation(self) -> List[Installation]:
         """ Fetches basic information about installations you have access to """
+        self.logger.debug(f"Calling /api/installation") 
         response = self._make_request(
             method='GET',
             endpoint='/api/installation',
@@ -27,6 +28,7 @@ class ZaptecApi(BaseApi):
             ChargersResponse: Object containing details like
             ID, name, status, and configuration
         """
+        self.logger.debug(f"Calling /api/chargers") 
         response = self._make_request(
             'GET',
             endpoint='/api/chargers'
@@ -50,7 +52,8 @@ class ZaptecApi(BaseApi):
             'To': to_date,
             'DetailLevel': 0
         }
-        
+
+        self.logger.debug(f"Calling /api/chargehistory with params: {params}")        
         response = self._make_request(
             method='GET',
             endpoint='/api/chargehistory',
@@ -86,6 +89,7 @@ class ZaptecApi(BaseApi):
             "groupBy": 0 # 0 = by user, 1 = by charger, 2 = by charge card
         }
 
+        self.logger.debug(f"Calling /api/chargehistotory/installationreport with params: {payload}") 
         response = self._make_request(
             method='POST',
             endpoint='/api/chargehistory/installationreport',
