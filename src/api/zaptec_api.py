@@ -13,7 +13,7 @@ class ZaptecApi(BaseApi):
 
     def get_installation(self) -> List[Installation]:
         """ Fetches basic information about installations you have access to """
-        self.logger.debug(f"Calling /api/installation") 
+        self.logger.debug("Calling /api/installation") 
         response = self._make_request(
             method='GET',
             endpoint='/api/installation',
@@ -28,7 +28,7 @@ class ZaptecApi(BaseApi):
             ChargersResponse: Object containing details like
             ID, name, status, and configuration
         """
-        self.logger.debug(f"Calling /api/chargers") 
+        self.logger.debug("Calling /api/chargers") 
         response = self._make_request(
             'GET',
             endpoint='/api/chargers'

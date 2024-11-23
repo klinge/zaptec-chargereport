@@ -64,7 +64,4 @@ class MonthlySummaryReport:
         
         self.email_service.send_summary_report(body, self.month_name)
 
-        self.logger.info(f"Emailed summary report for month: {self.month_name}")
-
-
         
