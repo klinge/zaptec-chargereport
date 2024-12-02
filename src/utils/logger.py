@@ -3,8 +3,10 @@ import os
 from datetime import datetime
 
 def setup_logger():
-    # Create logs directory if it doesn't exist
-    os.makedirs('data/logs', exist_ok=True)
+    # Get data directory from .env and create logs directory if it doesn't exist
+    data_dir = os.getenv("DATA_DIR", "data/logs")
+    log_dir = f"{data_dir}/logs"
+    os.makedirs(log_dir, exist_ok=True)
     
     # Configure logger
     logger = logging.getLogger('zaptec-chargereport')
@@ -17,7 +19,7 @@ def setup_logger():
     logger.propagate = False  # Prevent log propagation
     
     # File handler with current date
-    log_file = f"data/logs/charge_report_{datetime.now().strftime('%Y%m%d')}.log"
+    log_file = f"{log_dir}/charge_report_{datetime.now().strftime('%Y%m%d')}.log"
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.DEBUG)
     

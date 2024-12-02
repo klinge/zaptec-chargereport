@@ -10,8 +10,10 @@ import os
 
 class InvoicingReport:
     def __init__(self):
+        data_dir = os.getenv("DATA_DIR", "data")
+        self.report_dir = data_dir + "/reports"
         self.logger = setup_logger()
-        self.report_file = "data/reports/" + self._generate_report_filename()
+        self.report_file = self.report_dir + "/" + self._generate_report_filename()
         self.email_service = EmailService()
         
     def generate_report(self):
@@ -29,7 +31,7 @@ class InvoicingReport:
             #Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
             #Send the csv files as email attachments
-            self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
+            #self.email_service.send_charge_report(self.report_file, from_date_no_z.split('T')[0], to_date_no_z.split('T')[0])
     
         except Exception as e:
             handle_error(e, self.logger, self.email_service)
@@ -113,7 +115,7 @@ class InvoicingReport:
         #Filter out rows for BRF Bäcken and export to csv
         df_backen = df[df['Objekt-ID'].between('G5048', 'G5062')]
         try:
-            filename_backen = f"data/reports/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv"
+            filename_backen = f"{self.report_dir}/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv"
             df_backen.to_csv(path_or_buf=filename_backen, sep=';', index=False, encoding='utf-8')
             self.logger.info(f"Exported csv file: {filename_backen}")
         except (PermissionError, OSError) as e:
