@@ -17,7 +17,7 @@ class MonthlySummaryReport:
         try: 
             data = self.get_data_for_report()
             df = self.generate_summary_report(data)
-            #self.send_report(df)
+            self.send_report(df)
         except Exception as e:
             handle_error(e, self.logger, self.email_service)
 
