@@ -9,6 +9,7 @@ ZAPTEC_INSTALLATION_ID=your_installation_id
 #General report settings
 CHARGING_TARIFF="your tariff"
 REPORT_FILE="your filename"
+DATA_DIR="path to folder that holds report files and logs"
 
 # SMTP settings
 SMTP_SERVER="smtp.example.com"
