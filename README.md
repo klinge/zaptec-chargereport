@@ -1,8 +1,10 @@
 # Zaptec Charge Report Generator
 
-Automated tool for generating and distributing charging reports from Zaptec EV chargers.
+Automated tool for generating and distributing monthly charging reports from Zaptec EV chargers. 
+The output data is formatted to my personal requirements, and will need to be  modified to suit other needs. 
 
 ## Features
+- Simple wrapper around the Zaptec API (see `src/api` for more details)
 - Fetches charging data from Zaptec API
 - Generates summarized reports per user
 - Exports data to CSV in a format that is specific to my personal needs
@@ -11,7 +13,7 @@ Automated tool for generating and distributing charging reports from Zaptec EV c
 ## Requirements
 - Python 3.10+
 - Zaptec API credentials
-- SMTP server for email distribution
+- SMTP server credentials for email distribution
 
 ## Configuration
 Create a `.env` file with the following variables:
