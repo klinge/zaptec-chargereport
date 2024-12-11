@@ -3,7 +3,9 @@ from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
 
-'''Models for the response from the /api/chargehistory endpoint'''
+"""Models for the response from the /api/chargehistory endpoint"""
+
+
 class ChargerFirmware(BaseModel):
     Major: int
     Minor: int
@@ -11,6 +13,7 @@ class ChargerFirmware(BaseModel):
     Revision: int
     MajorRevision: int
     MinorRevision: int
+
 
 class ChargingSession(BaseModel):
     UserUserName: str
@@ -30,16 +33,21 @@ class ChargingSession(BaseModel):
     ExternallyEnded: bool
     ChargerFirmwareVersion: ChargerFirmware
 
+
 class ChargingSessionResponse(BaseModel):
     Pages: int
     Data: List[ChargingSession]
 
-'''Models for the response from the /api/installation endpoint'''
+
+"""Models for the response from the /api/installation endpoint"""
+
+
 class InstallationUser(BaseModel):
     UserId: UUID
     UserFullName: str
     UserEmail: str
     UserTokens: List[str]
+
 
 class EnergySensor(BaseModel):
     UniqueId: str
@@ -49,6 +57,7 @@ class EnergySensor(BaseModel):
     Model: str
     SerialNo: str
     Id: UUID
+
 
 class EnergySensorReading(BaseModel):
     PartitionKey: str
@@ -75,6 +84,7 @@ class EnergySensorReading(BaseModel):
     StatusMessage: str
     Ripple: float
 
+
 class SupportGroup(BaseModel):
     Id: UUID
     Name: str
@@ -96,6 +106,7 @@ class SupportGroup(BaseModel):
     PropertyMessagingAllowed: bool
     PropertyMessagingEnabled: bool
     TransferrableExperimentalFeatures: int
+
 
 class Installation(BaseModel):
     Id: UUID
@@ -153,7 +164,10 @@ class Installation(BaseModel):
     StorageEnergySensorLastReading: Optional[EnergySensorReading] = None
     SupportGroup: Optional[SupportGroup] = None
 
-'''Models for the response from the /api/charger endpoint'''
+
+"""Models for the response from the /api/charger endpoint"""
+
+
 class Charger(BaseModel):
     OperatingMode: int
     IsOnline: bool
@@ -173,15 +187,20 @@ class Charger(BaseModel):
     AuthenticationType: int
     IsAuthorizationRequired: bool
 
+
 class ChargersResponse(BaseModel):
     Pages: int
     Data: List[Charger]
 
-'''Models for the response from the /api/installation/report endpoint'''
+
+"""Models for the response from the /api/installation/report endpoint"""
+
+
 class UserDetails(BaseModel):
     Id: str
     Email: str
     FullName: str
+
 
 class TotalUserChargerReport(BaseModel):
     GroupAsString: str
@@ -189,6 +208,7 @@ class TotalUserChargerReport(BaseModel):
     TotalChargeSessionCount: int
     TotalChargeSessionEnergy: float
     TotalChargeSessionDuration: float
+
 
 class InstallationReport(BaseModel):
     InstallationName: str
