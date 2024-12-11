@@ -9,6 +9,35 @@ from typing import NoReturn, Optional
 
 
 class MonthlySummaryReport:
+    """A class for generating and distributing monthly summary reports of charging activities.
+
+    This class handles the complete workflow of generating monthly summary reports from Zaptec
+    charging data, including data retrieval, processing into a pandas DataFrame, and email
+    distribution. The report summarizes charging statistics for the previous month for all users.
+
+    Attributes:
+        logger: Configured logger instance for tracking operations
+        email_service (EmailService): Service instance for handling email operations
+        month_name (Optional[str]): Name of the month for which the report is generated
+
+    The report includes the following metrics per user:
+        - User name
+        - Email address
+        - Total energy consumption (kWh)
+        - Total charging duration
+        - Number of charging sessions
+
+    The report generation process includes:
+        1. Retrieving data for the previous month from Zaptec API
+        2. Processing data into a pandas DataFrame with user-specific metrics
+        3. Adding a totals row with aggregate statistics
+        4. Formatting and sending the report via email
+
+    Example:
+        >>> report = MonthlySummaryReport()
+        >>> report.generate_report()
+    """
+
     def __init__(self):
         self.logger = setup_logger()
         self.email_service = EmailService()

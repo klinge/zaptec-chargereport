@@ -10,6 +10,35 @@ import os
 
 
 class InvoicingReport:
+    """A class for generating and managing charging session reports for electric vehicle charging stations.
+
+    This class handles the complete workflow of generating invoicing reports from Zaptec charging
+    sessions, including data retrieval, processing, and distribution via email. It supports
+    separate reporting for different housing associations.
+
+    Attributes:
+        report_dir (str): Directory path where report files will be stored
+        logger: Configured logger instance for tracking operations
+        report_file (str): Full path to the generated report file
+        email_service (EmailService): Service instance for handling email operations
+
+    Environment Variables Required:
+        DATA_DIR: Base directory for data storage (defaults to "data")
+        CHARGING_TARIFF: Price per kWh for charging sessions
+        REPORT_FILE: Base name for the report file (defaults to "charge_report")
+
+    The report generation process includes:
+        1. Retrieving charging session data from Zaptec API
+        2. Processing and aggregating charging data per user
+        3. Calculating costs based on configured tariffs
+        4. Generating separate CSV reports for different housing associations
+        5. Distributing reports via email
+
+    Example usage:
+        >>> report = InvoicingReport()
+        >>> report.generate_report()
+    """
+
     def __init__(self):
         data_dir = os.getenv("DATA_DIR", "data")
         self.report_dir = data_dir + "/reports"
@@ -18,7 +47,7 @@ class InvoicingReport:
         self.email_service = EmailService()
 
     def generate_report(self):
-        """Main method to generate and send the charge report"""
+        """Main method to generate and send the invoicing report"""
         try:
             # Set report date to first and last day of previous month
             from_date, to_date, month_name = get_previous_month_range(include_z=True)

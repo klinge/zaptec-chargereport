@@ -4,7 +4,7 @@ Automated tool for generating and distributing monthly charging reports from Zap
 The output data is formatted to my personal requirements, and will need to be  modified to suit other needs. 
 
 ## Features
-- Simple wrapper around the Zaptec API (see `src/api` for more details)
+- Simple wrapper around some of the endpoints in the Zaptec API (see `src/api` for more details)
 - Fetches charging data from Zaptec API
 - Generates summarized reports per user
 - Exports data to CSV in a format that is specific to my personal needs
