@@ -1,6 +1,9 @@
 # Environment variables needed
 # Update and rename the file to .env
 
+# Environment can be  DEV or PROD
+ENV=DEV
+
 # Zaptec settings
 ZAPTEC_USERNAME=your_username
 ZAPTEC_PASSWORD=your_password

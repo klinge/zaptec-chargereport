@@ -11,6 +11,7 @@ class BaseApi:
         self.username = os.getenv("ZAPTEC_USERNAME")
         self.password = os.getenv("ZAPTEC_PASSWORD")
         self.installation_id = os.getenv("ZAPTEC_INSTALLATION_ID")
+        self.environment = os.getenv("ENV", "DEV")
         self.access_token: Optional[str] = None
         self.token_expiry: Optional[datetime] = None
         self.session = requests.Session()
