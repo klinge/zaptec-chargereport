@@ -1,5 +1,6 @@
 venv/
 .env
+*.bak
 __pycache__/
 data/**/*.csv
 **/*.log
