@@ -8,10 +8,8 @@ class EmailService:
     def __init__(self):
         self.logger = setup_logger()
 
-        if os.getenv("SEND_EMAILS") == "1":
-            self.send_email=True
-        else:
-            self.send_email=False
+        self.send_email = os.getenv('SEND_EMAILS', '0') == '1' 
+        if not self.send_email: 
             self.logger.warning("Email sending turned off by environment variable")
 
         self.smtp_username = os.getenv("SMTP_USERNAME")
