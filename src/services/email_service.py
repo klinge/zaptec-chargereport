@@ -8,6 +8,12 @@ class EmailService:
     def __init__(self):
         self.logger = setup_logger()
 
+        if os.getenv("SEND_EMAILS") == "1":
+            self.send_email=True
+        else:
+            self.send_email=False
+            self.logger.warning("Email sending turned off by environment variable")
+
         self.smtp_username = os.getenv("SMTP_USERNAME")
         if not self.smtp_username:
             raise ValueError("SMTP_USERNAME environment variable is not set")
@@ -35,15 +41,16 @@ class EmailService:
         self.logger.info("Initialized EmailService")
 
     def send_charge_report(self, filename: str, from_date: str, to_date: str):
-        recipients = os.getenv("INVOICING_RECIPIENTS")
-        if not recipients:
-            raise ValueError("INVOICING_RECIPIENTS environment variable is not set")
+        if self.send_email:
+            recipients = os.getenv("INVOICING_RECIPIENTS")
+            if not recipients:
+                raise ValueError("INVOICING_RECIPIENTS environment variable is not set")
 
-        recipients = recipients.split(",")
-        subject = f"BRF Signalen 1 - Laddningsrapport {from_date} - {to_date}"
-        body = f"Här kommer debiteringsunderlag för el förbrukad i laddstolpar för BRF Signalen 1. Underlaget avser perioden {from_date} - {to_date}"
+            recipients = recipients.split(",")
+            subject = f"BRF Signalen 1 - Laddningsrapport {from_date} - {to_date}"
+            body = f"Här kommer debiteringsunderlag för el förbrukad i laddstolpar för BRF Signalen 1. Underlaget avser perioden {from_date} - {to_date}"
 
-        self._send_email(recipients, subject, body, filename, content_type="plain")
+            self._send_email(recipients, subject, body, filename, content_type="plain")
 
     def send_error(self, error_message: str):
         error_recipients = os.getenv("ERROR_RECIPIENTS")
@@ -56,14 +63,15 @@ class EmailService:
         self._send_email(error_recipients, subject, error_message, content_type="plain")
 
     def send_summary_report(self, body: str, month: str):
-        summary_recipients = os.getenv("SUMMARY_RECIPIENTS")
-        if not summary_recipients:
-            raise ValueError("SUMMARY_RECIPIENTS environment variable is not set")
+        if self.send_email:
+            summary_recipients = os.getenv("SUMMARY_RECIPIENTS")
+            if not summary_recipients:
+                raise ValueError("SUMMARY_RECIPIENTS environment variable is not set")
 
-        summary_recipients = summary_recipients.split(",")
-        subject = f"BRF Signalen 1 - Laddningsstatistik för {month}"
+            summary_recipients = summary_recipients.split(",")
+            subject = f"BRF Signalen 1 - Laddningsstatistik för {month}"
 
-        self._send_email(summary_recipients, subject, body, content_type="html")
+            self._send_email(summary_recipients, subject, body, content_type="html")
 
     def _send_email(
         self,
