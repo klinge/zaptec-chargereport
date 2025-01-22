@@ -168,26 +168,12 @@ class InvoicingReport:
         try:
             # Make sure the reports directory exists
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-            # Filter out rows for BRF Signalen based on parking lot numbers
-            df_signalen = df[~df["Objekt-ID"].between("G5048", "G5062")]
-            df_signalen.to_csv(
+            df.to_csv(
                 path_or_buf=filename, sep=";", index=False, encoding="utf-8"
             )
             self.logger.info(f"Exported csv file: {filename}")
         except (PermissionError, OSError) as e:
             self.logger.error(f"Failed to write CSV file {filename}: {str(e)}")
-            raise
-
-        # Filter out rows for BRF Bäcken and export to csv
-        df_backen = df[df["Objekt-ID"].between("G5048", "G5062")]
-        try:
-            filename_backen = f"{self.report_dir}/laddstolpar_backen_{datetime.now().strftime('%Y%m%d')}.csv"
-            df_backen.to_csv(
-                path_or_buf=filename_backen, sep=";", index=False, encoding="utf-8"
-            )
-            self.logger.info(f"Exported csv file: {filename_backen}")
-        except (PermissionError, OSError) as e:
-            self.logger.error(msg=f"Failed to write CSV file {filename}: {str(e)}")
             raise
 
     def _generate_report_filename(self):

@@ -29,6 +29,7 @@ class BaseApi:
             ValueError: If response doesn't contain access token
             requests.exceptions.HTTPError: If authentication fails
         """
+        self.logger.debug("Started get_auth_token")
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         data = {
@@ -36,7 +37,10 @@ class BaseApi:
             "username": self.username,
             "password": self.password,
         }
-
+        self.logger.debug(f"In get_auth_token. Data is: {data}")
+        self.logger.debug(f"headers is: {headers}")
+        self.logger.debug(f"base_url is: {self.base_url}")
+        self.logger.debug(f"session is: {self.session}")
         response = self.session.post(
             f"{self.base_url}/oauth/token", headers=headers, data=data
         )
@@ -61,7 +65,9 @@ class BaseApi:
         Note:
             Automatically fetches new auth token if none exists
         """
+        self.logger.debug("Started get_headers")
         if not self.is_token_valid():
+            self.logger.info("Getting new auth token")
             self.get_auth_token()
 
         return {
@@ -87,6 +93,7 @@ class BaseApi:
         Returns:
             requests.Response:  the response object from the API call
         """
+        self.logger.debug("Started _make_request")
         headers = self.get_headers()
         url = f'{self.base_url}/{endpoint.lstrip("/")}'
         response = self.session.request(method, url, headers=headers, **kwargs)

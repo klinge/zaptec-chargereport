@@ -86,15 +86,17 @@ class ZaptecApi(BaseApi):
         Note:
             This endpoint requires dates without 'Z' suffix, unlike get_charging_sessions
         """
+        self.logger.debug("Starting method: get_installation_report")
         payload = {
             "fromDate": from_date,
             "endDate": to_date,
             "installationId": self.installation_id,
             "groupBy": 0,  # 0 = by user, 1 = by charger, 2 = by charge card
         }
+        self.logger.debug(f"Payload: {payload}")
 
         self.logger.debug(
-            f"Calling /api/chargehistotory/installationreport with params: {payload}"
+            f"Calling /api/chargehistory/installationreport with params: {payload}"
         )
         response = self._make_request(
             method="POST",
