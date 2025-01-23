@@ -14,6 +14,9 @@ CHARGING_TARIFF="your tariff"
 REPORT_FILE="your filename"
 DATA_DIR="path to folder that holds report files and logs"
 
+#Controls if emails are sent - good to be able to turn them off for testing
+SEND_EMAILS=0
+
 # SMTP settings
 SMTP_SERVER="smtp.example.com"
 SMTP_PORT="your port"

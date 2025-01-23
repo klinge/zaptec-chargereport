@@ -3,6 +3,8 @@
 Automated tool for generating and distributing monthly charging reports from Zaptec EV chargers. 
 The output data is formatted to my personal requirements, and will need to be  modified to suit other needs. 
 
+The wrapper around the Zaptec api (in 'src/api/) is far from complete but it's pretty general and can be used for other needs. 
+
 ## Features
 - Simple wrapper around some of the endpoints in the Zaptec API (see `src/api` for more details)
 - Fetches charging data from Zaptec API
