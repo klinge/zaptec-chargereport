@@ -23,8 +23,5 @@ The wrapper around the Zaptec api (in 'src/api/) is far from complete but it's p
 
 Make sure not to push the .env with your secret settings to a public repo. 
 
-```
-
-
 ## Usage
 Run the script using: `python main.py`
