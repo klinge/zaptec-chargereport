@@ -18,20 +18,13 @@ The wrapper around the Zaptec api (in 'src/api/) is far from complete but it's p
 - SMTP server credentials for email distribution
 
 ## Configuration
-Create a `.env` file with the following variables:
-```env
-ZAPTEC_USERNAME=your_username
-ZAPTEC_PASSWORD=your_password
-ZAPTEC_INSTALLATION_ID=your_installation_id
-CHARGING_TARIFF=your_charging_tariff(in monetary unit/kWh)
-SMTP_SERVER=smtp.example.com
-SMTP_PORT=587
-SMTP_USERNAME=your_email
-SMTP_PASSWORD=your_password
-REPORT_RECIPIENTS=recipient1@example.com,recipient2@example.com
+- Update the template file EXAMPLE.env with your personal settings. Replace the placeholders with your actual Zaptec credentials, SMTP server details, and report recipients.
+- Rename `EXAMPLE.env` to `.env` when done. 
+
+Make sure not to push the .env with your secret settings to a public repo. 
+
 ```
-Please replace the placeholders with your actual Zaptec credentials, SMTP server details, and report recipients.
-The file config.txt contains all the needed settings and can be edited and renamed to .env
+
 
 ## Usage
 Run the script using: `python main.py`
