@@ -143,7 +143,7 @@ class InvoicingReport:
                 "Tariff": TARIFF,
                 "Enhet": "kWh",
                 "Kommentar": summary_df.apply(
-                    lambda row: f"{row['user_name']}({row['user_email']}), Total laddtid: {row['duration']:.2f}",
+                    lambda row: f"{row['user_name']}({row['user_email']})",
                     axis=1,
                 ),
             }
