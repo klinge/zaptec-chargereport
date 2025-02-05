@@ -143,7 +143,7 @@ class InvoicingReport:
                 "Tariff": TARIFF,
                 "Enhet": "kWh",
                 "Kommentar": summary_df.apply(
-                    lambda row: f"{row['user_name']}({row['user_email']}), Total laddtid: {row['duration']}",
+                    lambda row: f"{row['user_name']}({row['user_email']}), Total laddtid: {row['duration']:.2f}",
                     axis=1,
                 ),
             }
@@ -207,7 +207,13 @@ class InvoicingReport:
         number = device_name.split()[1]
         # Pad with leading zeros to ensure 2 digits
         padded_number = number.zfill(2)
-        return f"G50{padded_number}"
+
+        # Format differently for parking spaces that belong to Brf Bäcken - requirement from Nabo
+        # Check if the device number is between 48 and 62 (inclusive)
+        if 48 <= int(number) <= 62:
+            return f"Brf Bäcken G50{padded_number}"
+        else:
+            return f"G50{padded_number}"
 
     def _add_summary_row_for_brf_backen(
         self, df: pd.DataFrame, from_date_no_z: str, to_date_no_z: str
