@@ -16,17 +16,23 @@ def setup_logger():
     if logger.hasHandlers():
         return logger
 
-    logger.setLevel(logging.INFO)
+    # Get log level from .env, default to INFO if not set
+    log_level = os.getenv("LOG_LEVEL", "INFO")
+    # Convert string to logging level constant
+    numeric_level = getattr(logging, log_level.upper())
+    
+    # Main logger always allows DEBUG messages
+    logger.setLevel(logging.DEBUG)
     logger.propagate = False  # Prevent log propagation
 
-    # File handler with current date
-    log_file = f"{log_dir}/charge_report_{datetime.now().strftime('%Y%m%d')}.log"
+    # File handler captures DEBUG messages
+    log_file = f"{log_dir}/charge_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.DEBUG)
 
-    # Console handler
+    # Console handler uses logging level from .env
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(numeric_level)
 
     # Format for the logs
     formatter = logging.Formatter(
