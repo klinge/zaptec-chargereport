@@ -65,6 +65,7 @@ class ZaptecApi(BaseApi):
         all_sessions = []
         page_index = 0
         page_count = 1  # Assume at least one page
+        jsonResponse = {}  # Ensure jsonResponse is always defined
 
         while page_index < page_count:
             params = {

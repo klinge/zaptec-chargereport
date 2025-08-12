@@ -1,3 +1,4 @@
+from typing import Optional
 from src.utils.logger import setup_logger
 import os
 import smtplib
@@ -12,21 +13,25 @@ class EmailService:
         if not self.send_email: 
             self.logger.warning("Email sending turned off by environment variable")
 
-        self.smtp_username = os.getenv("SMTP_USERNAME")
-        if not self.smtp_username:
+        smtp_username = os.getenv("SMTP_USERNAME")
+        if not smtp_username:
             raise ValueError("SMTP_USERNAME environment variable is not set")
+        self.smtp_username: str = smtp_username
 
-        self.smtp_password = os.getenv("SMTP_PASSWORD")
-        if not self.smtp_password:
+        smtp_password = os.getenv("SMTP_PASSWORD")
+        if not smtp_password:
             raise ValueError("SMTP_PASSWORD environment variable is not set")
+        self.smtp_password: str = smtp_password
 
-        self.smtp_server = os.getenv("SMTP_SERVER")
-        if not self.smtp_server:
+        smtp_server = os.getenv("SMTP_SERVER")
+        if not smtp_server:
             raise ValueError("SMTP_SERVER environment variable is not set")
+        self.smtp_server: str = smtp_server
 
-        self.smtp_port = int(os.getenv("SMTP_PORT"))
-        if not self.smtp_port:
+        smtp_port_str = os.getenv("SMTP_PORT")
+        if not smtp_port_str:
             raise ValueError("SMTP_PORT environment variable is not set")
+        self.smtp_port = int(smtp_port_str)
 
         self.smtp_from = os.getenv("SMTP_FROM_EMAIL")
         if not self.smtp_username:
@@ -76,7 +81,7 @@ class EmailService:
         recipients: list[str],
         subject: str,
         body: str,
-        attachment_path: str = None,
+        attachment_path: Optional[str] = None,
         content_type: str = "plain",
     ):
         """

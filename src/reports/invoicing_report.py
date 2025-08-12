@@ -123,10 +123,10 @@ class InvoicingReport:
             .reset_index()
         )
 
-        # Format final output
-        TARIFF = float(os.getenv("CHARGING_TARIFF"))
-        if TARIFF is None:
+        tariff_str = os.getenv("CHARGING_TARIFF")
+        if tariff_str is None:
             raise ValueError("CHARGING_TARIFF environment variable is not set")
+        TARIFF = float(tariff_str)
 
         result_df = pd.DataFrame(
             {
