@@ -2,3 +2,4 @@
 exclude = venv/,
           .venv/,
           .git/
+max-line-length = 95

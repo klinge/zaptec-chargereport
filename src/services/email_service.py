@@ -9,8 +9,8 @@ class EmailService:
     def __init__(self):
         self.logger = setup_logger()
 
-        self.send_email = os.getenv('SEND_EMAILS', '0') == '1' 
-        if not self.send_email: 
+        self.send_email = os.getenv('SEND_EMAILS', '0') == '1'
+        if not self.send_email:
             self.logger.warning("Email sending turned off by environment variable")
 
         smtp_username = os.getenv("SMTP_USERNAME")
@@ -51,10 +51,13 @@ class EmailService:
 
             recipients = recipients.split(",")
             subject = f"BRF Signalen 1 - Laddningsrapport {from_date} - {to_date}"
-            body = f"Här kommer debiteringsunderlag för el förbrukad i laddstolpar för BRF Signalen 1. Underlaget avser perioden {from_date} - {to_date}"
+            body = (
+                f"Här kommer debiteringsunderlag för el förbrukad i laddstolpar för "
+                f"BRF Signalen 1. Underlaget avser perioden {from_date} - {to_date}"
+            )
 
             self._send_email(recipients, subject, body, filename, content_type="plain")
-        else: 
+        else:
             self.logger.info("Email sending is disabled, skipping charge report email")
 
     def send_error(self, error_message: str):
@@ -89,7 +92,8 @@ class EmailService:
         content_type: str = "plain",
     ):
         """
-        Internal method to send emails with configurable content type and optional attachments.
+        Internal method to send emails with configurable content type
+        and optional attachments.
 
         Args:
             recipients: List of email addresses to send to
