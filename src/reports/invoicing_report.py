@@ -10,7 +10,8 @@ import os
 
 
 class InvoicingReport:
-    """A class for generating and managing charging session reports for electric vehicle charging stations.
+    """A class for generating and managing charging session reports for electric
+    vehicle charging stations.
 
     This class handles the complete workflow of generating invoicing reports from Zaptec charging
     sessions, including data retrieval, processing, and distribution via email. It supports
@@ -153,7 +154,8 @@ class InvoicingReport:
 
     def export_to_csv(self, df: pd.DataFrame, filename="charge-report.csv") -> None:
         """
-        Exports charging data to CSV files, splitting data between different housing associations.
+        Exports charging data to CSV files, splitting data between different
+        housing associations.
 
         Args:
             df: DataFrame containing the charge report data
@@ -195,7 +197,8 @@ class InvoicingReport:
 
     def _format_objekt_id(self, device_name: str) -> str:
         """
-        Formats a device name from the Zaptec API into a standardized object ID that is needed for reporting.
+        Formats a device name from the Zaptec API into a standardized object ID
+        that is needed for reporting.
 
         Args:
             device_name: Raw device name from Zaptec (format: "Plats XX")
@@ -208,7 +211,8 @@ class InvoicingReport:
         # Pad with leading zeros to ensure 2 digits
         padded_number = number.zfill(2)
 
-        # Format differently for parking spaces that belong to Brf Bäcken - requirement from Nabo
+        # Format differently for parking spaces that belong to Brf Bäcken
+        # - requirement from Nabo
         # Check if the device number is between 48 and 62 (inclusive)
         if 48 <= int(number) <= 62:
             return f"Brf Bäcken G50{padded_number}"
@@ -219,8 +223,9 @@ class InvoicingReport:
         self, df: pd.DataFrame, from_date_no_z: str, to_date_no_z: str
     ) -> pd.DataFrame:
         """
-        Sums the power usage on chargers that belong to BRF Bäcken and adds a summary row for BRF Bäcken.
-        Currently not used in the report, but could be used in the future.
+        Sums the power usage on chargers that belong to BRF Bäcken and adds a
+        summary row for BRF Bäcken. Currently not used in the report,
+        but could be used in the future.
 
         Args:
             df: DataFrame containing the charge report data
@@ -228,7 +233,8 @@ class InvoicingReport:
             to_date_no_z: End date of the report
 
         Returns:
-            DataFrame: the original dataframe with an additional summary row (G6000) for BRF Bäcken.
+            DataFrame: the original dataframe with an additional summary row (G6000)
+            for BRF Bäcken.
         """
         filtered_df = df[df["Objekt-ID"].between("G5048", "G5062")]
         if not filtered_df.empty:
