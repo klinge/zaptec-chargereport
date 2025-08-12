@@ -54,6 +54,8 @@ class EmailService:
             body = f"Här kommer debiteringsunderlag för el förbrukad i laddstolpar för BRF Signalen 1. Underlaget avser perioden {from_date} - {to_date}"
 
             self._send_email(recipients, subject, body, filename, content_type="plain")
+        else: 
+            self.logger.info("Email sending is disabled, skipping charge report email")
 
     def send_error(self, error_message: str):
         error_recipients = os.getenv("ERROR_RECIPIENTS")
@@ -75,6 +77,8 @@ class EmailService:
             subject = f"BRF Signalen 1 - Laddningsstatistik för {month}"
 
             self._send_email(summary_recipients, subject, body, content_type="html")
+        else:
+            self.logger.info("Email sending is disabled, skipping summary report email")
 
     def _send_email(
         self,

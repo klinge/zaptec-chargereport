@@ -96,6 +96,7 @@ class MonthlySummaryReport:
         # Add the totals row to the DataFrame
         df.loc[len(df)] = totals
         self.logger.info(f"Generated summary report for month: {self.month_name}")
+        self.logger.debug(f"Summary DataFrame:\n{df}")
 
         return df
 
