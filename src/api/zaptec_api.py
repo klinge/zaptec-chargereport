@@ -1,7 +1,9 @@
 import urllib3
+import json
 from typing import Dict, List, Optional
 from pydantic import ValidationError
 from src.api.base_api import BaseApi
+from src.utils.logger import setup_logger
 from src.models.zaptec_models import (
     ChargingSessionResponse,
     Installation,
@@ -16,6 +18,7 @@ class ZaptecApi(BaseApi):
     def __init__(self):
         self.base_url = "https://api.zaptec.com"
         super().__init__(self.base_url)
+        self.logger = setup_logger()
 
     def get_installation(self) -> List[Installation]:
         """Fetches basic information about installations you have access to"""
@@ -56,19 +59,47 @@ class ZaptecApi(BaseApi):
             "From": from_date,
             "To": to_date,
             "DetailLevel": 0,
+            "PageIndex": 0,
         }
 
-        self.logger.debug(f"Calling /api/chargehistory with params: {params}")
-        response = self._make_request(
-            method="GET", endpoint="/api/chargehistory", params=params
-        )
+        all_sessions = []
+        page_index = 0
+        page_count = 1  # Assume at least one page
 
-        jsonResponse = response.json()
-        # Remove SignedSession from each session, it's big and never needed
-        for session in jsonResponse["Data"]:
-            session.pop("SignedSession", None)
+        while page_index < page_count:
+            params = {
+                "installationId": self.installation_id,
+                "From": from_date,
+                "To": to_date,
+                "DetailLevel": 0,
+                "PageIndex": page_index,
+            }
 
-        return ChargingSessionResponse.model_validate(obj=jsonResponse)
+            self.logger.debug(f"Calling /api/chargehistory with params: {params}")
+            response = self._make_request(
+                method="GET", endpoint="/api/chargehistory", params=params
+            )
+
+            jsonResponse = response.json()
+            # Remove SignedSession from each session, it's big and never needed
+            for session in jsonResponse["Data"]:
+                session.pop("SignedSession", None)
+
+            all_sessions.extend(jsonResponse["Data"])
+
+            # Update page_count from response (if available)
+            page_count = jsonResponse["Pages"]
+            self.logger.info(
+                f"Fetched page {page_index + 1}/{page_count} with {len(jsonResponse['Data'])} sessions"
+            )
+            page_index += 1
+
+
+        # Build a single response object with all sessions
+        combined_response = jsonResponse.copy()
+        combined_response["Data"] = all_sessions
+
+        return ChargingSessionResponse.model_validate(obj=combined_response)
 
     def get_installation_report(
         self, from_date: str, to_date: str
