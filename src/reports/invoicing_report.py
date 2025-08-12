@@ -179,7 +179,7 @@ class InvoicingReport:
     def _generate_report_filename(self):
         return f"{os.getenv('REPORT_FILE', 'charge_report')}_{datetime.now().strftime('%Y%m%d')}.csv"
 
-    def _calculate_duration_hours(self, start: str, end: str):
+    def _calculate_duration_hours(self, start: datetime, end: datetime) -> float:
         """
         Calculates charging duration in hours between two timestamps.
 
