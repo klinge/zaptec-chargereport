@@ -4,3 +4,4 @@ venv/
 __pycache__/
 data/**/*.csv
 **/*.log
+debug.py
