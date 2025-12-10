@@ -6,7 +6,7 @@ install-dev:
 
 # Run tests
 test:
-	pytest
+	pytest -m "not integration"
 
 # Run tests with coverage report
 test-cov:
