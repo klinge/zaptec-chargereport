@@ -7,7 +7,7 @@ set -e
 echo "🚀 Starting post-deployment checks..."
 
 # Activate virtual environment
-source venv/bin/activate
+source "../venv/bin/activate"
 
 # Run smoke tests
 echo "📋 Running smoke tests..."
