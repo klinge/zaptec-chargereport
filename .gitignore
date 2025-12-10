@@ -1,5 +1,7 @@
 venv/
 .env
+.coverage
+htmlcov/
 *.bak
 __pycache__/
 data/**/*.csv
