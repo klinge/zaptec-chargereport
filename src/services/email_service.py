@@ -9,24 +9,32 @@ class EmailService:
     def __init__(self):
         self.logger = setup_logger()
         self.env = os.getenv("ENV", "DEV")
-        
+
         # Auto-disable email sending in DEV unless explicitly enabled
-        default_send = '0' if self.env == 'DEV' else '1'
-        self.send_email = os.getenv('SEND_EMAILS', default_send) == '1'
+        default_send = "0" if self.env == "DEV" else "1"
+        self.send_email = os.getenv("SEND_EMAILS", default_send) == "1"
         if not self.send_email:
             self.logger.warning("Email sending turned off")
 
         # Load environment-specific SMTP settings
-        env_prefix = f"{self.env}_" if self.env in ['DEV', 'PROD'] else ""
-        
-        smtp_username = os.getenv(f"{env_prefix}SMTP_USERNAME") or os.getenv("SMTP_USERNAME")
+        env_prefix = f"{self.env}_" if self.env in ["DEV", "PROD"] else ""
+
+        smtp_username = os.getenv(f"{env_prefix}SMTP_USERNAME") or os.getenv(
+            "SMTP_USERNAME"
+        )
         if not smtp_username:
-            raise ValueError(f"{env_prefix}SMTP_USERNAME environment variable is not set")
+            raise ValueError(
+                f"{env_prefix}SMTP_USERNAME environment variable is not set"
+            )
         self.smtp_username: str = smtp_username
 
-        smtp_password = os.getenv(f"{env_prefix}SMTP_PASSWORD") or os.getenv("SMTP_PASSWORD")
+        smtp_password = os.getenv(f"{env_prefix}SMTP_PASSWORD") or os.getenv(
+            "SMTP_PASSWORD"
+        )
         if not smtp_password:
-            raise ValueError(f"{env_prefix}SMTP_PASSWORD environment variable is not set")
+            raise ValueError(
+                f"{env_prefix}SMTP_PASSWORD environment variable is not set"
+            )
         self.smtp_password: str = smtp_password
 
         smtp_server = os.getenv(f"{env_prefix}SMTP_SERVER") or os.getenv("SMTP_SERVER")
@@ -39,9 +47,13 @@ class EmailService:
             raise ValueError(f"{env_prefix}SMTP_PORT environment variable is not set")
         self.smtp_port = int(smtp_port_str)
 
-        self.smtp_from = os.getenv(f"{env_prefix}SMTP_FROM_EMAIL") or os.getenv("SMTP_FROM_EMAIL")
+        self.smtp_from = os.getenv(f"{env_prefix}SMTP_FROM_EMAIL") or os.getenv(
+            "SMTP_FROM_EMAIL"
+        )
         if not self.smtp_from:
-            raise ValueError(f"{env_prefix}SMTP_FROM_EMAIL environment variable is not set")
+            raise ValueError(
+                f"{env_prefix}SMTP_FROM_EMAIL environment variable is not set"
+            )
 
         self.smtp_timeout = int(
             os.getenv("SMTP_TIMEOUT", "15")

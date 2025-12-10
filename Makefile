@@ -1,4 +1,4 @@
-.PHONY: test test-cov test-contracts install-dev lint clean
+.PHONY: test test-cov test-contracts install-dev lint autofix autofix-check clean
 
 # Install development dependencies
 install-dev:
@@ -18,7 +18,17 @@ test-contracts:
 
 # Run linting
 lint:
-	flake8 src/ tests/
+	flake8 src/
+
+# Preview auto-fix changes without applying
+autofix-check:
+	autoflake --recursive --remove-all-unused-imports --remove-unused-variables src/ tests/
+
+# Auto-fix linting issues
+autofix:
+	autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables src/ tests/
+	autopep8 --in-place --recursive --aggressive --aggressive src/ tests/
+	black src/ tests/
 
 # Clean up test artifacts
 clean:

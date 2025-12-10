@@ -95,7 +95,6 @@ class ZaptecApi(BaseApi):
             )
             page_index += 1
 
-
         # Build a single response object with all sessions
         combined_response = jsonResponse.copy()
         combined_response["Data"] = all_sessions

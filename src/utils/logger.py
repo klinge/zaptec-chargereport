@@ -20,7 +20,7 @@ def setup_logger():
     log_level = os.getenv("LOG_LEVEL", "INFO")
     # Convert string to logging level constant
     numeric_level = getattr(logging, log_level.upper())
-    
+
     # Main logger always allows DEBUG messages
     logger.setLevel(logging.DEBUG)
     logger.propagate = False  # Prevent log propagation

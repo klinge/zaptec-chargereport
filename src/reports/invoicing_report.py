@@ -170,9 +170,7 @@ class InvoicingReport:
         try:
             # Make sure the reports directory exists
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-            df.to_csv(
-                path_or_buf=filename, sep=";", index=False, encoding="utf-8"
-            )
+            df.to_csv(path_or_buf=filename, sep=";", index=False, encoding="utf-8")
             self.logger.info(f"Exported csv file: {filename}")
         except (PermissionError, OSError) as e:
             self.logger.error(f"Failed to write CSV file {filename}: {str(e)}")
