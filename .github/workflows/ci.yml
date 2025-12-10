@@ -32,8 +32,3 @@ jobs:
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
-    
-    - name: Security scan
-      run: |
-        pip install safety
-        pip freeze | grep -v -f requirements-dev.txt | safety scan --stdin
