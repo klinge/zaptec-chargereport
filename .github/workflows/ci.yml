@@ -29,3 +29,6 @@ jobs:
     
     - name: Run tests
       run: make test
+    
+    - name: Security scan
+      run: pip install safety && safety check
