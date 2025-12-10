@@ -103,6 +103,42 @@ def test_zaptec_api_connection():
         logger.error(f"Zaptec API connection failed: {e}")
         return False
 
+def test_api_structure_quick_check():
+    """Quick check that API structure hasn't changed (pagination, etc.)"""
+    logger = setup_smoke_test_logger()
+    logger.info("Testing API structure...")
+    
+    try:
+        from src.api.zaptec_api import ZaptecApi
+        from src.utils.dateutils import get_previous_month_range
+        
+        # Use last 7 days to minimize data
+        from datetime import datetime, timedelta
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=7)
+        from_date = start_date.strftime("%Y-%m-%dT00:00:00.001Z")
+        to_date = end_date.strftime("%Y-%m-%dT23:59:59.999Z")
+        
+        with ZaptecApi() as api:
+            response = api.get_charging_sessions(from_date, to_date)
+            
+            # Verify pagination is working (should handle multiple pages fine)
+            if hasattr(response, 'Pages'):
+                if response.Pages > 1:
+                    logger.info(f"✓ Pagination working: {len(response.Data)} items across {response.Pages} pages")
+                else:
+                    logger.info(f"✓ Single page response: {len(response.Data)} items")
+            else:
+                logger.error("API response missing 'Pages' field - structure changed!")
+                return False
+                
+            logger.info("✓ API structure check passed")
+            return True
+            
+    except Exception as e:
+        logger.error(f"API structure check failed: {e}")
+        return False
+
 def test_email_service_config():
     """Test email service configuration (don't send actual email)"""
     logger = setup_smoke_test_logger()
@@ -159,7 +195,8 @@ def run_smoke_tests():
         test_imports,
         test_date_calculations,
         test_email_service_config,
-        test_zaptec_api_connection,  # Most likely to fail, test last
+        test_zaptec_api_connection,
+        test_api_structure_quick_check,  # Check for API changes
     ]
     
     passed = 0

@@ -1,4 +1,4 @@
-.PHONY: test test-cov install-dev lint clean
+.PHONY: test test-cov test-contracts install-dev lint clean
 
 # Install development dependencies
 install-dev:
@@ -11,6 +11,10 @@ test:
 # Run tests with coverage report
 test-cov:
 	pytest --cov=src --cov-report=html --cov-report=term
+
+# Run API contract tests
+test-contracts:
+	DOTENV_FILE=.env pytest tests/test_api_contract.py tests/test_api_field_mapping.py -v -m integration
 
 # Run linting
 lint:
