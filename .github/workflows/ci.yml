@@ -27,8 +27,11 @@ jobs:
     - name: Lint with flake8
       run: make lint
     
-    - name: Run tests
-      run: make test
+    - name: Run tests with coverage
+      run: pytest -m "not integration" --cov=src --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
     
     - name: Security scan
       run: pip install safety && safety check
