@@ -1,0 +1,49 @@
+# Grafana alerting rules for Zaptec monitoring
+# Import this into your Grafana instance
+
+groups:
+  - name: zaptec-health
+    rules:
+      - alert: ZaptecHealthCheckFailed
+        expr: |
+          count_over_time({service="zaptec-health-check", status="unhealthy"}[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: zaptec
+        annotations:
+          summary: "Zaptec health check failed"
+          description: "Zaptec application health check has failed. Check the logs for details."
+          
+      - alert: ZaptecHealthCheckMissing
+        expr: |
+          absent_over_time({service="zaptec-health-check"}[8h])
+        for: 5m
+        labels:
+          severity: warning
+          service: zaptec
+        annotations:
+          summary: "Zaptec health check not running"
+          description: "No health check logs received in the last 8 hours. Health monitoring may be down."
+          
+      - alert: ZaptecApplicationErrors
+        expr: |
+          count_over_time({job="zaptec-app"} |= "ERROR" [1h]) > 5
+        for: 0m
+        labels:
+          severity: warning
+          service: zaptec
+        annotations:
+          summary: "High error rate in Zaptec application"
+          description: "More than 5 errors detected in Zaptec application logs in the last hour."
+
+      - alert: ZaptecAPIConnectionFailed
+        expr: |
+          count_over_time({service="zaptec-health-check"} |= "Zaptec API connection failed" [30m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: zaptec
+        annotations:
+          summary: "Zaptec API connection failed"
+          description: "Cannot connect to Zaptec API. This will prevent report generation."

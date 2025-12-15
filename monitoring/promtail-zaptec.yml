@@ -1,0 +1,57 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://localhost:3100/loki/api/v1/push
+
+scrape_configs:
+  # Zaptec application logs
+  - job_name: zaptec-app
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: zaptec-app
+          service: zaptec-charge-report
+          __path__: /var/www/html/zaptec-chargereport/data/logs/charge_report_*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (?P<logger>\S+) - (?P<level>\S+) - (?P<message>.*)'
+      - labels:
+          level:
+          logger:
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05,000'
+
+  # Zaptec health check structured logs
+  - job_name: zaptec-health-check
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: zaptec-health-check
+          service: zaptec-health-check
+          __path__: /var/www/html/zaptec-chargereport/data/logs/health_check_structured.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            service: service
+            message: message
+            status: status
+            details: details
+            host: host
+      - labels:
+          level:
+          service:
+          status:
+          host:
+      - timestamp:
+          source: timestamp
+          format: RFC3339

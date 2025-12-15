@@ -15,7 +15,8 @@ class BaseApi:
         self.access_token: Optional[str] = None
         self.token_expiry: Optional[datetime] = None
         self.session = requests.Session()
-        self.session.verify = False
+        # SSL verification: enabled by default, can be disabled for DEV environments
+        self.session.verify = os.getenv("SSL_VERIFY", "true").lower() == "true"
         self.logger = setup_logger()
 
     def get_auth_token(self) -> str:
