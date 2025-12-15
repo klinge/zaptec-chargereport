@@ -95,10 +95,37 @@ class ZaptecApi(BaseApi):
             )
             page_index += 1
 
-
-        # Build a single response object with all sessions
+        # Build a single combined response with all sessions
         combined_response = jsonResponse.copy()
         combined_response["Data"] = all_sessions
+
+        # === NEW 20251215: Filter out guest/unauthenticated sessions ===
+        original_count = len(all_sessions)
+        filtered_sessions = []
+        skipped_count = 0
+
+        for session_dict in all_sessions:
+            # A session is considered "guest" if it lacks any of the key user fields
+            if not session_dict.get("UserId") or not session_dict.get("UserUserName"):
+                skipped_count += 1
+                self.logger.warning(
+                    "Skipping guest/unauthenticated charging session during invoicing report. "
+                    "Session details: Id=%s, Start=%s, End=%s, Energy=%.3f kWh, DeviceName=%s",
+                    session_dict.get("Id"),
+                    session_dict.get("StartDateTime"),
+                    session_dict.get("EndDateTime"),
+                    session_dict.get("Energy", 0),
+                    session_dict.get("DeviceName"),
+                )
+                continue
+            filtered_sessions.append(session_dict)
+
+        if skipped_count > 0:
+            self.logger.warning(
+                f"Skipped {skipped_count} guest/unauthenticated session(s) out of {original_count} total sessions"
+            )
+
+        combined_response["Data"] = filtered_sessions
 
         return ChargingSessionResponse.model_validate(obj=combined_response)
 
@@ -135,4 +162,20 @@ class ZaptecApi(BaseApi):
             endpoint="/api/chargehistory/installationreport",
             json=payload,
         )
-        return InstallationReport.model_validate(response.json())
+
+        data = response.json()
+        self.logger.debug(f"Raw response JSON: {data}")
+
+        # Temporary workaround: Check if first item is a "ghost" row without user info
+        reports = data.get("totalUserChargerReportModel", [])
+        if reports and "UserDetails" not in reports[0] and "GroupAsString" not in reports[0]:
+            self.logger.warning(
+                "Detected anomalous first row in installation report (likely guest/unknown sessions). "
+                "Skipping it temporarily. First row data: %s",
+                reports[0]
+            )
+            # Remove the first item
+            data["totalUserChargerReportModel"] = reports[1:]
+
+        # Now validate the (possibly modified) data
+        return InstallationReport.model_validate(data)

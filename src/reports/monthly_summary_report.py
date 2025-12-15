@@ -38,7 +38,8 @@ class MonthlySummaryReport:
         >>> report.generate_report()
     """
 
-    def __init__(self):
+    def __init__(self, zaptec_api: ZaptecApi):
+        self.zaptec_api = zaptec_api
         self.logger = setup_logger()
         self.email_service = EmailService()
         self.month_name: Optional[str] = None
@@ -58,7 +59,7 @@ class MonthlySummaryReport:
         )
 
         # Get data from the zaptec API
-        with ZaptecApi() as api:
+        with self.zaptec_api as api:
             report: InstallationReport = api.get_installation_report(
                 from_date=from_date, to_date=to_date
             )

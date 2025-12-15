@@ -61,14 +61,15 @@ class EmailService:
             self.logger.info("Email sending is disabled, skipping charge report email")
 
     def send_error(self, error_message: str):
-        error_recipients = os.getenv("ERROR_RECIPIENTS")
-        if not error_recipients:
-            raise ValueError("ERROR_RECIPIENTS environment variable is not set")
+        if self.send_email:
+            error_recipients = os.getenv("ERROR_RECIPIENTS")
+            if not error_recipients:
+                raise ValueError("ERROR_RECIPIENTS environment variable is not set")
 
-        error_recipients = error_recipients.split(",")
-        subject = "ERROR: Charge report generation failed"
+            error_recipients = error_recipients.split(",")
+            subject = "ERROR: Charge report generation failed"
 
-        self._send_email(error_recipients, subject, error_message, content_type="plain")
+            self._send_email(error_recipients, subject, error_message, content_type="plain")
 
     def send_summary_report(self, body: str, month: str):
         if self.send_email:

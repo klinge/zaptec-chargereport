@@ -40,7 +40,8 @@ class InvoicingReport:
         >>> report.generate_report()
     """
 
-    def __init__(self):
+    def __init__(self, zaptec_api: ZaptecApi):
+        self.zaptec_api = zaptec_api
         data_dir = os.getenv("DATA_DIR", "data")
         self.report_dir = data_dir + "/reports"
         self.logger = setup_logger()
@@ -59,7 +60,7 @@ class InvoicingReport:
                 f"---Started generating invoicing report for period: {from_date} - {to_date}"
             )
             # Get data from the zaptec API
-            with ZaptecApi() as api:
+            with self.zaptec_api as api:
                 sessions = api.get_charging_sessions(from_date, to_date)
             # Put all sessions in a dataframe and sum them per user
             summary_df = self.process_charging_data(
@@ -67,12 +68,19 @@ class InvoicingReport:
             )
             # Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
+
+            self.logger.info(
+                f"Saved invoicing file: {self.report_file}"
+            )
+
             # Send the csv files as email attachments
             self.email_service.send_charge_report(
                 self.report_file,
                 from_date_no_z.split("T")[0],
                 to_date_no_z.split("T")[0],
             )
+
+            self.logger.info("Sent invoicing report email")
 
         except Exception as e:
             handle_error(e, self.logger, self.email_service)

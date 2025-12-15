@@ -53,6 +53,7 @@ class BaseApi:
 
         self.access_token = token_data["access_token"]
         self.token_expiry = datetime.now() + timedelta(seconds=token_data["expires_in"])
+        self.logger.debug(f"Token set. Expires at: {self.token_expiry}")
         return token_data
 
     def get_headers(self) -> Dict[str, str]:
@@ -67,7 +68,7 @@ class BaseApi:
         """
         self.logger.debug("Started get_headers")
         if not self.is_token_valid():
-            self.logger.info("Getting new auth token")
+            self.logger.info("Token not existing or expired - Getting new auth token")
             self.get_auth_token()
 
         return {
@@ -77,6 +78,7 @@ class BaseApi:
 
     def is_token_valid(self) -> bool:
         if not self.access_token or not self.token_expiry:
+            self.logger.debug("Token is invalid: No access token or expiry")
             return False
         # Add buffer time (e.g., 2 minutes) to prevent edge cases
         return datetime.now() < (self.token_expiry - timedelta(minutes=2))
