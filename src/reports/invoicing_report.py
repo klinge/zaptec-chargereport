@@ -69,10 +69,6 @@ class InvoicingReport:
             # Export the summary to csv files
             self.export_to_csv(summary_df, filename=self.report_file)
 
-            self.logger.info(
-                f"Saved invoicing file: {self.report_file}"
-            )
-
             # Send the csv files as email attachments
             self.email_service.send_charge_report(
                 self.report_file,
