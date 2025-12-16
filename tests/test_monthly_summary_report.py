@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 from unittest.mock import Mock, patch
 from src.reports.monthly_summary_report import MonthlySummaryReport
+from src.api.zaptec_api import ZaptecApi
 from src.models.zaptec_models import (
     InstallationReport,
     TotalUserChargerReport,
@@ -46,10 +47,9 @@ class TestMonthlySummaryReport:
             totalUserChargerReportModel=user_reports,
         )
 
-    @patch("src.reports.monthly_summary_report.ZaptecApi")
     @patch("src.reports.monthly_summary_report.get_previous_month_range")
     def test_get_data_for_report(
-        self, mock_date_range, mock_api_class, sample_installation_report, mock_logger
+        self, mock_date_range, sample_installation_report, mock_logger
     ):
         """Test data retrieval from API"""
         mock_date_range.return_value = (
@@ -58,14 +58,15 @@ class TestMonthlySummaryReport:
             "January",
         )
 
-        mock_api = Mock()
+        mock_api = Mock(spec=ZaptecApi)
         mock_api.get_installation_report.return_value = sample_installation_report
-        mock_api_class.return_value.__enter__.return_value = mock_api
+        mock_api.__enter__ = Mock(return_value=mock_api)
+        mock_api.__exit__ = Mock(return_value=False)
 
         with patch(
             "src.reports.monthly_summary_report.setup_logger", return_value=mock_logger
         ):
-            report = MonthlySummaryReport()
+            report = MonthlySummaryReport(mock_api)
             result = report.get_data_for_report()
 
             assert result == sample_installation_report
@@ -79,7 +80,8 @@ class TestMonthlySummaryReport:
         with patch(
             "src.reports.monthly_summary_report.setup_logger", return_value=mock_logger
         ):
-            report = MonthlySummaryReport()
+            mock_api = Mock(spec=ZaptecApi)
+            report = MonthlySummaryReport(mock_api)
             df = report.generate_summary_report(sample_installation_report)
 
             # Should have 3 rows: 2 users + 1 total row
@@ -124,7 +126,8 @@ class TestMonthlySummaryReport:
         with patch(
             "src.reports.monthly_summary_report.setup_logger", return_value=mock_logger
         ):
-            report = MonthlySummaryReport()
+            mock_api = Mock(spec=ZaptecApi)
+            report = MonthlySummaryReport(mock_api)
             report.month_name = "January"
             report.email_service = mock_email_service
 
@@ -140,10 +143,9 @@ class TestMonthlySummaryReport:
             assert "User 1" in body
             assert "test@example.com" in body
 
-    @patch("src.reports.monthly_summary_report.ZaptecApi")
     @patch("src.reports.monthly_summary_report.get_previous_month_range")
     def test_generate_report_end_to_end(
-        self, mock_date_range, mock_api_class, sample_installation_report, mock_logger
+        self, mock_date_range, sample_installation_report, mock_logger
     ):
         """Test complete report generation workflow"""
         mock_date_range.return_value = (
@@ -152,9 +154,10 @@ class TestMonthlySummaryReport:
             "January",
         )
 
-        mock_api = Mock()
+        mock_api = Mock(spec=ZaptecApi)
         mock_api.get_installation_report.return_value = sample_installation_report
-        mock_api_class.return_value.__enter__.return_value = mock_api
+        mock_api.__enter__ = Mock(return_value=mock_api)
+        mock_api.__exit__ = Mock(return_value=False)
 
         mock_email_service = Mock()
 
@@ -165,7 +168,7 @@ class TestMonthlySummaryReport:
                 "src.reports.monthly_summary_report.EmailService",
                 return_value=mock_email_service,
             ):
-                report = MonthlySummaryReport()
+                report = MonthlySummaryReport(mock_api)
                 report.generate_report()
 
                 # Verify API was called
@@ -174,10 +177,9 @@ class TestMonthlySummaryReport:
                 # Verify email was sent
                 mock_email_service.send_summary_report.assert_called_once()
 
-    @patch("src.reports.monthly_summary_report.ZaptecApi")
     @patch("src.reports.monthly_summary_report.get_previous_month_range")
     def test_generate_report_error_handling(
-        self, mock_date_range, mock_api_class, mock_logger
+        self, mock_date_range, mock_logger
     ):
         """Test error handling in report generation"""
         mock_date_range.return_value = (
@@ -186,9 +188,10 @@ class TestMonthlySummaryReport:
             "January",
         )
 
-        mock_api = Mock()
+        mock_api = Mock(spec=ZaptecApi)
         mock_api.get_installation_report.side_effect = Exception("API Error")
-        mock_api_class.return_value.__enter__.return_value = mock_api
+        mock_api.__enter__ = Mock(return_value=mock_api)
+        mock_api.__exit__ = Mock(return_value=False)
 
         mock_email_service = Mock()
 
@@ -202,7 +205,7 @@ class TestMonthlySummaryReport:
                 with patch(
                     "src.reports.monthly_summary_report.handle_error"
                 ) as mock_handle_error:
-                    report = MonthlySummaryReport()
+                    report = MonthlySummaryReport(mock_api)
                     report.generate_report()
 
                     # Verify error handler was called

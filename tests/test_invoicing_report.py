@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 from unittest.mock import Mock, patch
 from src.reports.invoicing_report import InvoicingReport
+from src.api.zaptec_api import ZaptecApi
 from src.models.zaptec_models import (
     ChargingSession,
     ChargingSessionResponse,
@@ -58,19 +59,22 @@ class TestInvoicingReport:
 
     def test_format_objekt_id_regular(self):
         """Test object ID formatting for regular parking spaces"""
-        report = InvoicingReport()
+        mock_api = Mock(spec=ZaptecApi)
+        report = InvoicingReport(mock_api)
         result = report._format_objekt_id("Plats 01")
         assert result == "G5001"
 
     def test_format_objekt_id_brf_backen(self):
         """Test object ID formatting for BRF Bäcken spaces (48-62)"""
-        report = InvoicingReport()
+        mock_api = Mock(spec=ZaptecApi)
+        report = InvoicingReport(mock_api)
         result = report._format_objekt_id("Plats 50")
         assert result == "Brf Bäcken G5050"
 
     def test_calculate_duration_hours(self):
         """Test duration calculation in hours"""
-        report = InvoicingReport()
+        mock_api = Mock(spec=ZaptecApi)
+        report = InvoicingReport(mock_api)
         start = datetime(2024, 1, 1, 10, 0)
         end = datetime(2024, 1, 1, 12, 30)
 
@@ -85,7 +89,8 @@ class TestInvoicingReport:
         with patch(
             "src.reports.invoicing_report.setup_logger", return_value=mock_logger
         ):
-            report = InvoicingReport()
+            mock_api = Mock(spec=ZaptecApi)
+            report = InvoicingReport(mock_api)
 
             result_df = report.process_charging_data(
                 sample_charging_sessions,
@@ -107,10 +112,9 @@ class TestInvoicingReport:
             assert g5050_row["Förbrukning"] == 40.0
             assert g5001_row["Kostnad"] == 25.5 * 2.75  # CHARGING_TARIFF from .env.test
 
-    @patch("src.reports.invoicing_report.ZaptecApi")
     @patch("src.reports.invoicing_report.get_previous_month_range")
     def test_generate_report_success(
-        self, mock_date_range, mock_api_class, sample_charging_sessions, mock_logger
+        self, mock_date_range, sample_charging_sessions, mock_logger
     ):
         """Test successful report generation end-to-end"""
         # Mock date range
@@ -121,9 +125,10 @@ class TestInvoicingReport:
         )
 
         # Mock API
-        mock_api = Mock()
+        mock_api = Mock(spec=ZaptecApi)
         mock_api.get_charging_sessions.return_value = sample_charging_sessions
-        mock_api_class.return_value.__enter__.return_value = mock_api
+        mock_api.__enter__ = Mock(return_value=mock_api)
+        mock_api.__exit__ = Mock(return_value=False)
 
         # Mock email service
         mock_email = Mock()
@@ -136,7 +141,7 @@ class TestInvoicingReport:
             ):
                 with patch("src.reports.invoicing_report.os.makedirs"):
                     with patch.object(InvoicingReport, "export_to_csv") as mock_export:
-                        report = InvoicingReport()
+                        report = InvoicingReport(mock_api)
                         report.generate_report()
 
                         # Verify API was called
@@ -150,10 +155,9 @@ class TestInvoicingReport:
                         # Verify email was sent
                         mock_email.send_charge_report.assert_called_once()
 
-    @patch("src.reports.invoicing_report.ZaptecApi")
     @patch("src.reports.invoicing_report.get_previous_month_range")
     def test_generate_report_api_error(
-        self, mock_date_range, mock_api_class, mock_logger
+        self, mock_date_range, mock_logger
     ):
         """Test report generation handles API errors"""
         mock_date_range.return_value = (
@@ -163,9 +167,10 @@ class TestInvoicingReport:
         )
 
         # Mock API to raise exception
-        mock_api = Mock()
+        mock_api = Mock(spec=ZaptecApi)
         mock_api.get_charging_sessions.side_effect = Exception("API Error")
-        mock_api_class.return_value.__enter__.return_value = mock_api
+        mock_api.__enter__ = Mock(return_value=mock_api)
+        mock_api.__exit__ = Mock(return_value=False)
 
         mock_email = Mock()
 
@@ -178,7 +183,7 @@ class TestInvoicingReport:
                 with patch(
                     "src.reports.invoicing_report.handle_error"
                 ) as mock_handle_error:
-                    report = InvoicingReport()
+                    report = InvoicingReport(mock_api)
                     report.generate_report()
 
                     # Verify error handler was called
@@ -207,7 +212,8 @@ class TestInvoicingReport:
             "src.reports.invoicing_report.setup_logger", return_value=mock_logger
         ):
             with patch("pandas.DataFrame.to_csv") as mock_to_csv:
-                report = InvoicingReport()
+                mock_api = Mock(spec=ZaptecApi)
+                report = InvoicingReport(mock_api)
                 report.export_to_csv(df, "test_report.csv")
 
                 # Verify directory creation (called for both logs and reports)
@@ -243,7 +249,8 @@ class TestInvoicingReport:
             with patch(
                 "pandas.DataFrame.to_csv", side_effect=PermissionError("Access denied")
             ):
-                report = InvoicingReport()
+                mock_api = Mock(spec=ZaptecApi)
+                report = InvoicingReport(mock_api)
 
                 with pytest.raises(PermissionError):
                     report.export_to_csv(df, "test_report.csv")
@@ -256,7 +263,8 @@ class TestInvoicingReport:
             with patch("src.reports.invoicing_report.datetime") as mock_datetime:
                 mock_datetime.now.return_value.strftime.return_value = "20240115"
 
-                report = InvoicingReport()
+                mock_api = Mock(spec=ZaptecApi)
+                report = InvoicingReport(mock_api)
                 filename = report._generate_report_filename()
 
                 assert (
