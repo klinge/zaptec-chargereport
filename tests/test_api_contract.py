@@ -2,6 +2,10 @@ import pytest
 from src.api.zaptec_api import ZaptecApi
 from src.utils.dateutils import get_previous_month_range
 
+@pytest.fixture(scope="session")
+def zaptec_api():
+    with ZaptecApi() as api:
+        yield api
 
 class TestZaptecAPIContract:
     """
@@ -9,10 +13,9 @@ class TestZaptecAPIContract:
     These tests make REAL API calls to catch breaking changes.
     """
 
-    @pytest.fixture(scope="session")
-    def zaptec_api():
-        with ZaptecApi() as api:
-            yield api
+    @pytest.fixture(autouse=True)
+    def _inject_api(self, zaptec_api: ZaptecApi):
+        self.api = zaptec_api
 
     @pytest.mark.integration
     def test_charging_sessions_response_structure(self):
@@ -20,8 +23,7 @@ class TestZaptecAPIContract:
         # Use a small date range to minimize data
         from_date, to_date, _ = get_previous_month_range(include_z=True)
 
-        
-        response = zaptec_api.get_charging_sessions(from_date, to_date)
+        response = self.api.get_charging_sessions(from_date, to_date)
 
         # Verify response structure
         assert hasattr(response, "Pages"), "Response missing 'Pages' field"
@@ -86,7 +88,7 @@ class TestZaptecAPIContract:
         """Test that installation report API returns expected structure"""
         from_date, to_date, _ = get_previous_month_range(include_z=False)
 
-        response = zaptec_api.get_installation_report(from_date, to_date)
+        response = self.api.get_installation_report(from_date, to_date)
 
         # Verify response structure
         assert hasattr(
@@ -152,7 +154,7 @@ class TestZaptecAPIContract:
     def test_api_authentication_still_works(self):
         """Test that API authentication hasn't changed"""
 
-        token_data = zaptec_api.get_auth_token()
+        token_data = self.api.get_auth_token()
 
         assert (
             "access_token" in token_data
@@ -170,8 +172,8 @@ class TestZaptecAPIContract:
         from_date, to_date, _ = get_previous_month_range(include_z=True)
 
         # Get both detailed sessions and summary report
-        sessions_response = zaptec_api.get_charging_sessions(from_date, to_date)
-        summary_response = zaptec_api.get_installation_report(
+        sessions_response = self.api.get_charging_sessions(from_date, to_date)
+        summary_response = self.api.get_installation_report(
             from_date.replace("Z", ""), to_date.replace("Z", "")
         )
 
