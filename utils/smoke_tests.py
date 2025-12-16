@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 # Add project root to Python path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Global shared API instance to avoid rate limiting from multiple authentications
+_shared_api_instance = None
+
 def setup_smoke_test_logger():
     """Setup simple logger for smoke tests"""
     logging.basicConfig(
@@ -19,6 +22,21 @@ def setup_smoke_test_logger():
         format='%(asctime)s - SMOKE TEST - %(levelname)s - %(message)s'
     )
     return logging.getLogger('smoke_test')
+
+def get_shared_api_instance():
+    """Get or create a shared ZaptecApi instance to avoid rate limiting"""
+    global _shared_api_instance
+    if _shared_api_instance is None:
+        from src.api.zaptec_api import ZaptecApi
+        _shared_api_instance = ZaptecApi()
+    return _shared_api_instance
+
+def cleanup_shared_api_instance():
+    """Clean up the shared API instance"""
+    global _shared_api_instance
+    if _shared_api_instance is not None:
+        _shared_api_instance.session.close()
+        _shared_api_instance = None
 
 def test_environment_variables():
     """Verify all required environment variables are present"""
@@ -92,16 +110,15 @@ def test_zaptec_api_connection():
     logger.info("Testing Zaptec API connection...")
     
     try:
-        from src.api.zaptec_api import ZaptecApi
-        with ZaptecApi() as api:
-            # Just test authentication, don't fetch data
-            token_data = api.get_auth_token()
-            if token_data.get('access_token'):
-                logger.info("✓ Zaptec API authentication successful")
-                return True
-            else:
-                logger.error("No access token received")
-                return False
+        api = get_shared_api_instance()
+        # Just test authentication, don't fetch data
+        token_data = api.get_auth_token()
+        if token_data.get('access_token'):
+            logger.info("✓ Zaptec API authentication successful")
+            return True
+        else:
+            logger.error("No access token received")
+            return False
     except Exception as e:
         logger.error(f"Zaptec API connection failed: {e}")
         return False
@@ -112,32 +129,31 @@ def test_api_structure_quick_check():
     logger.info("Testing API structure...")
     
     try:
-        from src.api.zaptec_api import ZaptecApi
         from src.utils.dateutils import get_previous_month_range
         
         # Use last 7 days to minimize data
-        from datetime import datetime, timedelta
+        from datetime import timedelta
         end_date = datetime.now()
         start_date = end_date - timedelta(days=7)
         from_date = start_date.strftime("%Y-%m-%dT00:00:00.001Z")
         to_date = end_date.strftime("%Y-%m-%dT23:59:59.999Z")
         
-        with ZaptecApi() as api:
-            response = api.get_charging_sessions(from_date, to_date)
-            
-            # Verify pagination is working (should handle multiple pages fine)
-            if hasattr(response, 'Pages'):
-                if response.Pages > 1:
-                    logger.info(f"✓ Pagination working: {len(response.Data)} items across {response.Pages} pages")
-                else:
-                    logger.info(f"✓ Single page response: {len(response.Data)} items")
+        api = get_shared_api_instance()
+        response = api.get_charging_sessions(from_date, to_date)
+        
+        # Verify pagination is working (should handle multiple pages fine)
+        if hasattr(response, 'Pages'):
+            if response.Pages > 1:
+                logger.info(f"✓ Pagination working: {len(response.Data)} items across {response.Pages} pages")
             else:
-                logger.error("API response missing 'Pages' field - structure changed!")
-                return False
-                
-            logger.info("✓ API structure check passed")
-            return True
+                logger.info(f"✓ Single page response: {len(response.Data)} items")
+        else:
+            logger.error("API response missing 'Pages' field - structure changed!")
+            return False
             
+        logger.info("✓ API structure check passed")
+        return True
+        
     except Exception as e:
         logger.error(f"API structure check failed: {e}")
         return False
@@ -205,15 +221,19 @@ def run_smoke_tests():
     passed = 0
     failed = 0
     
-    for test in tests:
-        try:
-            if test():
-                passed += 1
-            else:
+    try:
+        for test in tests:
+            try:
+                if test():
+                    passed += 1
+                else:
+                    failed += 1
+            except Exception as e:
+                logger.error(f"Test {test.__name__} crashed: {e}")
                 failed += 1
-        except Exception as e:
-            logger.error(f"Test {test.__name__} crashed: {e}")
-            failed += 1
+    finally:
+        # Clean up shared API instance
+        cleanup_shared_api_instance()
     
     logger.info("=" * 50)
     logger.info(f"SMOKE TESTS COMPLETE: {passed} passed, {failed} failed")
