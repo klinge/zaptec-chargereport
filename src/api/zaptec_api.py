@@ -122,7 +122,9 @@ class ZaptecApi(BaseApi):
 
         if skipped_count > 0:
             self.logger.warning(
-                f"Skipped {skipped_count} guest/unauthenticated session(s) out of {original_count} total sessions"
+                f"Skipped {skipped_count} guest/unauthenticated session(s) out "
+                "of %s total sessions",
+                original_count,
             )
 
         combined_response["Data"] = filtered_sessions
