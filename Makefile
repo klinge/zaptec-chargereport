@@ -1,5 +1,9 @@
 .PHONY: test test-cov test-contracts install-dev lint autofix autofix-check clean
 
+# Install dependencies
+install:
+	pip install -r requirements.txt
+
 # Install development dependencies
 install-dev:
 	pip install -r requirements-dev.txt
