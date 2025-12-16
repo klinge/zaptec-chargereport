@@ -12,7 +12,7 @@ Automated tool for generating and distributing monthly charging reports from Zap
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/zaptec-chargereport.git
+git clone https://github.com/klinge/zaptec-chargereport.git
 cd zaptec-chargereport
 
 # Install dependencies
@@ -88,6 +88,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 1. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
+   pip install -r requirements-dev.txt
    ```
 
 2. **Configure environment**:
