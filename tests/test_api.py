@@ -1,7 +1,7 @@
 import pytest
 import responses
 from unittest.mock import patch, Mock
-from src.api.zaptec_api import ZaptecApi
+from src.api.zaptec_api import _ZaptecApi as ZaptecApi
 from src.api.base_api import BaseApi
 
 

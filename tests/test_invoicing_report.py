@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from unittest.mock import Mock, patch
 from src.reports.invoicing_report import InvoicingReport
-from src.api.zaptec_api import ZaptecApi
+from src.api.zaptec_api import _ZaptecApi as ZaptecApi
 from src.models.zaptec_models import (
     ChargingSession,
     ChargingSessionResponse,

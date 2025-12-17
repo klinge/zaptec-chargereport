@@ -1,5 +1,5 @@
 import pytest
-from src.api.zaptec_api import ZaptecApi
+from src.api.zaptec_api import _ZaptecApi as ZaptecApi
 from src.utils.dateutils import get_previous_month_range
 
 @pytest.fixture(scope="session")

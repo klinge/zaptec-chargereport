@@ -1,4 +1,4 @@
-from src.api.zaptec_api import ZaptecApi
+from src.api.zaptec_api import _ZaptecApi as ZaptecApi
 from src.models.zaptec_models import ChargingSessionResponse
 from src.services.email_service import EmailService
 from src.utils.logger import setup_logger

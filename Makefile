@@ -37,6 +37,7 @@ autofix:
 # Clean up test artifacts
 clean:
 	rm -rf .pytest_cache/
+	rm -rf test_data/
 	rm -rf htmlcov/
 	rm -rf .coverage
 	find . -type d -name __pycache__ -exec rm -rf {} +

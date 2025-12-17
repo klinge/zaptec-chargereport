@@ -14,7 +14,7 @@ from src.models.zaptec_models import (
 urllib3.disable_warnings()
 
 
-class ZaptecApi(BaseApi):
+class _ZaptecApi(BaseApi):
     def __init__(self):
         self.base_url = "https://api.zaptec.com"
         super().__init__(self.base_url)
