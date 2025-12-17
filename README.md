@@ -40,7 +40,7 @@ python main.py
 The `src/api/` module provides a clean Python interface to Zaptec's REST API:
 
 ```python
-from src.api.zaptec_api import ZaptecApi
+from src.api.zaptec_api import _ZaptecApi as ZaptecApi
 
 with ZaptecApi() as api:
     # Get charging sessions for date range

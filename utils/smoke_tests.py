@@ -27,7 +27,7 @@ def get_shared_api_instance():
     """Get or create a shared ZaptecApi instance to avoid rate limiting"""
     global _shared_api_instance
     if _shared_api_instance is None:
-        from src.api.zaptec_api import ZaptecApi
+        from src.api.zaptec_api import _ZaptecApi as ZaptecApi
         _shared_api_instance = ZaptecApi()
     return _shared_api_instance
 
@@ -92,7 +92,7 @@ def test_imports():
     logger.info("Testing module imports...")
     
     try:
-        from src.api.zaptec_api import ZaptecApi
+        from src.api.zaptec_api import _ZaptecApi as ZaptecApi
         from src.reports.invoicing_report import InvoicingReport
         from src.reports.monthly_summary_report import MonthlySummaryReport
         from src.services.email_service import EmailService
