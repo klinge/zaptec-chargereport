@@ -28,18 +28,9 @@ class TestEmailService:
                 assert service.send_email
 
     def test_environment_specific_smtp_settings(self, mock_logger):
-        """Test that environment-specific SMTP settings are loaded"""
-        test_env = {
-            "ENV": "DEV",
-            "DEV_SMTP_SERVER": "dev.smtp.com",
-            "DEV_SMTP_PORT": "587",
-            "DEV_SMTP_USERNAME": "dev_user",
-            "DEV_SMTP_PASSWORD": "dev_pass",
-            "DEV_SMTP_FROM_EMAIL": "dev@test.com",
-            "SMTP_TIMEOUT": "15",
-        }
-
-        with patch.dict(os.environ, test_env):
+        """Test that environment-specific SMTP settings are loaded from .env"""
+        # This test now relies on DEV_SMTP_* values from .env.test
+        with patch.dict(os.environ, {"ENV": "DEV"}):
             with patch(
                 "src.services.email_service.setup_logger", return_value=mock_logger
             ):
@@ -53,6 +44,7 @@ class TestEmailService:
 
     def test_fallback_to_generic_smtp_settings(self, mock_logger):
         """Test fallback to generic SMTP settings when env-specific not available"""
+        # Only set generic SMTP vars, no DEV_SMTP_* so it falls back
         test_env = {
             "ENV": "DEV",
             "SMTP_SERVER": "generic.smtp.com",
@@ -62,7 +54,8 @@ class TestEmailService:
             "SMTP_FROM_EMAIL": "generic@test.com",
         }
 
-        with patch.dict(os.environ, test_env):
+        # Use clear=True to start fresh and only include what we explicitly want
+        with patch.dict(os.environ, test_env, clear=True):
             with patch(
                 "src.services.email_service.setup_logger", return_value=mock_logger
             ):

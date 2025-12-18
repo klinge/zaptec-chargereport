@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Global shared API instance to avoid rate limiting from multiple authentications
 _shared_api_instance = None
 
+
 def setup_smoke_test_logger():
     """Setup simple logger for smoke tests"""
     logging.basicConfig(
@@ -22,6 +23,7 @@ def setup_smoke_test_logger():
         format='%(asctime)s - SMOKE TEST - %(levelname)s - %(message)s'
     )
     return logging.getLogger('smoke_test')
+
 
 def get_shared_api_instance():
     """Get or create a shared ZaptecApi instance to avoid rate limiting"""
@@ -31,12 +33,14 @@ def get_shared_api_instance():
         _shared_api_instance = ZaptecApi()
     return _shared_api_instance
 
+
 def cleanup_shared_api_instance():
     """Clean up the shared API instance"""
     global _shared_api_instance
     if _shared_api_instance is not None:
         _shared_api_instance.session.close()
         _shared_api_instance = None
+
 
 def test_environment_variables():
     """Verify all required environment variables are present"""
@@ -59,6 +63,7 @@ def test_environment_variables():
     
     logger.info("✓ All required environment variables present")
     return True
+
 
 def test_directory_structure():
     """Verify required directories exist and are writable"""
@@ -86,6 +91,7 @@ def test_directory_structure():
     logger.info("✓ Directory structure OK")
     return True
 
+
 def test_imports():
     """Verify all critical modules can be imported"""
     logger = setup_smoke_test_logger()
@@ -103,6 +109,7 @@ def test_imports():
     except ImportError as e:
         logger.error(f"Import error: {e}")
         return False
+
 
 def test_zaptec_api_connection():
     """Test basic connectivity to Zaptec API (authentication only)"""
@@ -122,6 +129,7 @@ def test_zaptec_api_connection():
     except Exception as e:
         logger.error(f"Zaptec API connection failed: {e}")
         return False
+
 
 def test_api_structure_quick_check():
     """Quick check that API structure hasn't changed (pagination, etc.)"""
@@ -158,6 +166,7 @@ def test_api_structure_quick_check():
         logger.error(f"API structure check failed: {e}")
         return False
 
+
 def test_email_service_config():
     """Test email service configuration (don't send actual email)"""
     logger = setup_smoke_test_logger()
@@ -179,6 +188,7 @@ def test_email_service_config():
         logger.error(f"Email service configuration error: {e}")
         return False
 
+
 def test_date_calculations():
     """Test date utility functions work correctly"""
     logger = setup_smoke_test_logger()
@@ -197,6 +207,7 @@ def test_date_calculations():
     except Exception as e:
         logger.error(f"Date calculation error: {e}")
         return False
+
 
 def run_smoke_tests():
     """Run all smoke tests and return overall result"""

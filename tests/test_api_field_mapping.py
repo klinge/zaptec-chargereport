@@ -3,20 +3,11 @@ from src.api.zaptec_api import _ZaptecApi as ZaptecApi
 from src.utils.dateutils import get_previous_month_range
 
 
-@pytest.fixture(scope="session")
-def zaptec_api():
-    with ZaptecApi() as api:
-        yield api
-
 class TestAPIFieldMapping:
     """
     Tests that verify the exact field names and data access patterns
     used in the business logic haven't changed.
     """
-
-    @pytest.fixture(autouse=True)
-    def _inject_api(self, zaptec_api: ZaptecApi):
-        self.api = zaptec_api
 
     @pytest.mark.integration
     def test_invoicing_report_field_access(self):

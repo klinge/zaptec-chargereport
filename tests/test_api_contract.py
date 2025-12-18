@@ -1,22 +1,13 @@
 import pytest
-from src.api.zaptec_api import _ZaptecApi as ZaptecApi
+from datetime import datetime
 from src.utils.dateutils import get_previous_month_range
 
-@pytest.fixture(scope="session")
-def zaptec_api():
-    with ZaptecApi() as api:
-        yield api
 
 class TestZaptecAPIContract:
     """
     API contract tests - verify Zaptec API hasn't changed unexpectedly.
     These tests make REAL API calls to catch breaking changes.
     """
-
-    @pytest.fixture(autouse=True)
-    def _inject_api(self, zaptec_api: ZaptecApi):
-        self.api = zaptec_api
-
     @pytest.mark.integration
     def test_charging_sessions_response_structure(self):
         """Test that charging sessions API returns expected structure"""
@@ -153,18 +144,11 @@ class TestZaptecAPIContract:
     @pytest.mark.integration
     def test_api_authentication_still_works(self):
         """Test that API authentication hasn't changed"""
-
-        token_data = self.api.get_auth_token()
-
-        assert (
-            "access_token" in token_data
-        ), "Authentication response missing access_token"
-        assert (
-            "expires_in" in token_data
-        ), "Authentication response missing expires_in"
-        assert isinstance(
-            token_data["expires_in"], int
-        ), "expires_in should be integer"
+        # The fixture already authenticated at session start.
+        # Verify the token is valid (don't force a new auth to avoid rate limiting)
+        assert self.api.is_token_valid(), "Token should be valid from fixture setup"
+        assert self.api.access_token is not None, "Access token should exist"
+        assert isinstance(self.api.token_expiry, datetime), "Token expiry should be datetime"
 
     @pytest.mark.integration
     def test_data_completeness_check(self):
