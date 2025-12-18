@@ -251,101 +251,101 @@ class TestEmailService:
                         attachment_path="nonexistent.csv",
                     )
 
-        @patch("src.services.email_service.smtplib.SMTP")
-        def test_send_error_success(self, mock_smtp, mock_logger):
-            """send_error should send a plain email to ERROR_RECIPIENTS when enabled"""
-            mock_server = Mock()
-            mock_smtp.return_value.__enter__.return_value = mock_server
+    @patch("src.services.email_service.smtplib.SMTP")
+    def test_send_error_success(self, mock_smtp, mock_logger):
+        """send_error should send a plain email to ERROR_RECIPIENTS when enabled"""
+        mock_server = Mock()
+        mock_smtp.return_value.__enter__.return_value = mock_server
 
-            test_env = {
-                "ENV": "PROD",
-                "SEND_EMAILS": "1",
-                "SMTP_SERVER": "smtp.test.com",
-                "SMTP_PORT": "587",
-                "SMTP_USERNAME": "test_user",
-                "SMTP_PASSWORD": "test_pass",
-                "SMTP_FROM_EMAIL": "from@test.com",
-                "ERROR_RECIPIENTS": "err1@test.com,err2@test.com",
-            }
+        test_env = {
+            "ENV": "PROD",
+            "SEND_EMAILS": "1",
+            "SMTP_SERVER": "smtp.test.com",
+            "SMTP_PORT": "587",
+            "SMTP_USERNAME": "test_user",
+            "SMTP_PASSWORD": "test_pass",
+            "SMTP_FROM_EMAIL": "from@test.com",
+            "ERROR_RECIPIENTS": "err1@test.com,err2@test.com",
+        }
 
-            with patch.dict(os.environ, test_env, clear=True):
-                with patch("src.services.email_service.setup_logger", return_value=mock_logger):
-                    service = EmailService()
-                    service.send_error("Something went wrong")
+        with patch.dict(os.environ, test_env, clear=True):
+            with patch("src.services.email_service.setup_logger", return_value=mock_logger):
+                service = EmailService()
+                service.send_error("Something went wrong")
 
-                    mock_smtp.assert_called_once_with(host="smtp.test.com", port=587, timeout=15)
-                    mock_server.starttls.assert_called_once()
-                    mock_server.login.assert_called_once_with("test_user", "test_pass")
-                    # inspect sent EmailMessage
-                    assert mock_server.send_message.call_count == 1
-                    sent_msg = mock_server.send_message.call_args[0][0]
-                    assert "ERROR: Charge report generation failed" in sent_msg["Subject"]
+                mock_smtp.assert_called_once_with(host="smtp.test.com", port=587, timeout=15)
+                mock_server.starttls.assert_called_once()
+                mock_server.login.assert_called_once_with("test_user", "test_pass")
+                # inspect sent EmailMessage
+                assert mock_server.send_message.call_count == 1
+                sent_msg = mock_server.send_message.call_args[0][0]
+                assert "ERROR: Charge report generation failed" in sent_msg["Subject"]
 
-        def test_send_error_missing_recipients_raises(self, mock_logger):
-            """send_error should raise ValueError when ERROR_RECIPIENTS missing"""
-            test_env = {
-                "ENV": "PROD",
-                "SEND_EMAILS": "1",
-                "SMTP_SERVER": "smtp.test.com",
-                "SMTP_PORT": "587",
-                "SMTP_USERNAME": "test_user",
-                "SMTP_PASSWORD": "test_pass",
-                "SMTP_FROM_EMAIL": "from@test.com",
-            }
+    def test_send_error_missing_recipients_raises(self, mock_logger):
+        """send_error should raise ValueError when ERROR_RECIPIENTS missing"""
+        test_env = {
+            "ENV": "PROD",
+            "SEND_EMAILS": "1",
+            "SMTP_SERVER": "smtp.test.com",
+            "SMTP_PORT": "587",
+            "SMTP_USERNAME": "test_user",
+            "SMTP_PASSWORD": "test_pass",
+            "SMTP_FROM_EMAIL": "from@test.com",
+        }
 
-            with patch.dict(os.environ, test_env, clear=True):
-                with patch("src.services.email_service.setup_logger", return_value=mock_logger):
-                    service = EmailService()
-                    with pytest.raises(ValueError, match="ERROR_RECIPIENTS"):
-                        service.send_error("boom")
+        with patch.dict(os.environ, test_env, clear=True):
+            with patch("src.services.email_service.setup_logger", return_value=mock_logger):
+                service = EmailService()
+                with pytest.raises(ValueError, match="ERROR_RECIPIENTS"):
+                    service.send_error("boom")
 
-        @patch("src.services.email_service.smtplib.SMTP")
-        def test_send_summary_report_disabled(self, mock_smtp, mock_logger):
-            """When sending is disabled, summary report should not attempt SMTP connection"""
-            test_env = {
-                "ENV": "PROD",
-                "SEND_EMAILS": "0",
-                "SMTP_SERVER": "smtp.test.com",
-                "SMTP_PORT": "587",
-                "SMTP_USERNAME": "test_user",
-                "SMTP_PASSWORD": "test_pass",
-                "SMTP_FROM_EMAIL": "from@test.com",
-                "SUMMARY_RECIPIENTS": "sum@test.com",
-            }
+    @patch("src.services.email_service.smtplib.SMTP")
+    def test_send_summary_report_disabled(self, mock_smtp, mock_logger):
+        """When sending is disabled, summary report should not attempt SMTP connection"""
+        test_env = {
+            "ENV": "PROD",
+            "SEND_EMAILS": "0",
+            "SMTP_SERVER": "smtp.test.com",
+            "SMTP_PORT": "587",
+            "SMTP_USERNAME": "test_user",
+            "SMTP_PASSWORD": "test_pass",
+            "SMTP_FROM_EMAIL": "from@test.com",
+            "SUMMARY_RECIPIENTS": "sum@test.com",
+        }
 
-            with patch.dict(os.environ, test_env, clear=True):
-                with patch("src.services.email_service.setup_logger", return_value=mock_logger):
-                    service = EmailService()
-                    service.send_summary_report("<p>summary</p>", "January")
+        with patch.dict(os.environ, test_env, clear=True):
+            with patch("src.services.email_service.setup_logger", return_value=mock_logger):
+                service = EmailService()
+                service.send_summary_report("<p>summary</p>", "January")
 
-                    mock_smtp.assert_not_called()
+                mock_smtp.assert_not_called()
 
-        @patch("src.services.email_service.smtplib.SMTP")
-        def test_send_summary_report_success(self, mock_smtp, mock_logger):
-            """send_summary_report should send an HTML email to SUMMARY_RECIPIENTS when enabled"""
-            mock_server = Mock()
-            mock_smtp.return_value.__enter__.return_value = mock_server
+    @patch("src.services.email_service.smtplib.SMTP")
+    def test_send_summary_report_success(self, mock_smtp, mock_logger):
+        """send_summary_report should send an HTML email to SUMMARY_RECIPIENTS when enabled"""
+        mock_server = Mock()
+        mock_smtp.return_value.__enter__.return_value = mock_server
 
-            test_env = {
-                "ENV": "PROD",
-                "SEND_EMAILS": "1",
-                "SMTP_SERVER": "smtp.test.com",
-                "SMTP_PORT": "587",
-                "SMTP_USERNAME": "test_user",
-                "SMTP_PASSWORD": "test_pass",
-                "SMTP_FROM_EMAIL": "from@test.com",
-                "SUMMARY_RECIPIENTS": "sum1@test.com,sum2@test.com",
-            }
+        test_env = {
+            "ENV": "PROD",
+            "SEND_EMAILS": "1",
+            "SMTP_SERVER": "smtp.test.com",
+            "SMTP_PORT": "587",
+            "SMTP_USERNAME": "test_user",
+            "SMTP_PASSWORD": "test_pass",
+            "SMTP_FROM_EMAIL": "from@test.com",
+            "SUMMARY_RECIPIENTS": "sum1@test.com,sum2@test.com",
+        }
 
-            with patch.dict(os.environ, test_env, clear=True):
-                with patch("src.services.email_service.setup_logger", return_value=mock_logger):
-                    service = EmailService()
-                    service.send_summary_report("<b>HTML</b>", "February")
+        with patch.dict(os.environ, test_env, clear=True):
+            with patch("src.services.email_service.setup_logger", return_value=mock_logger):
+                service = EmailService()
+                service.send_summary_report("<b>HTML</b>", "February")
 
-                    mock_smtp.assert_called_once_with(host="smtp.test.com", port=587, timeout=15)
-                    mock_server.starttls.assert_called_once()
-                    mock_server.login.assert_called_once_with("test_user", "test_pass")
-                    assert mock_server.send_message.call_count == 1
-                    sent_msg = mock_server.send_message.call_args[0][0]
-                    # ensure HTML content type
-                    assert sent_msg.get_content_subtype() == "html"
+                mock_smtp.assert_called_once_with(host="smtp.test.com", port=587, timeout=15)
+                mock_server.starttls.assert_called_once()
+                mock_server.login.assert_called_once_with("test_user", "test_pass")
+                assert mock_server.send_message.call_count == 1
+                sent_msg = mock_server.send_message.call_args[0][0]
+                # ensure HTML content type
+                assert sent_msg.get_content_subtype() == "html"
