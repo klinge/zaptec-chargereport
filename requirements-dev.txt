@@ -6,4 +6,4 @@ python-dotenv==1.2.1
 autopep8==2.0.4
 black==23.12.1
 autoflake==2.2.1
-flake8==6.1.0
+flake8==7.3.0
