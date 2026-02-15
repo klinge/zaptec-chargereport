@@ -1,10 +1,12 @@
 venv/
 .env
+.env.test
 .coverage
 htmlcov/
 test_data/
 *.bak
 __pycache__/
+.pytest_cache/
 data/**/*.csv
 **/*.log
 debug.py
