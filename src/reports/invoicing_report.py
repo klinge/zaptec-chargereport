@@ -154,7 +154,7 @@ class InvoicingReport:
             }
         )
         self.logger.info(f"Created summary dataframe with {len(result_df)} rows")
-        return result_df.sort_values("Objekt-ID")
+        return result_df.sort_values("Objekt-ID").reset_index(drop=True)
 
     def export_to_csv(self, df: pd.DataFrame, filename="charge-report.csv") -> None:
         """
