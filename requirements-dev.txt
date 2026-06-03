@@ -4,6 +4,6 @@ pytest-cov==4.1.0
 responses==0.24.1
 python-dotenv==1.2.1
 autopep8==2.3.2
-black==26.1.0
+black==26.3.1
 autoflake==2.3.3
 flake8==7.3.0
