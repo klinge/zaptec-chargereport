@@ -76,8 +76,6 @@ class InvoicingReport:
                 to_date_no_z.split("T")[0],
             )
 
-            self.logger.info("Sent invoicing report email")
-
         except Exception as e:
             handle_error(e, self.logger, self.email_service)
 
