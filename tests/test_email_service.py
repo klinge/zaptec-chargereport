@@ -225,6 +225,35 @@ class TestEmailService:
                     )
 
     @patch("src.services.email_service.smtplib.SMTP")
+    def test_send_email_smtp_exception(self, mock_smtp, mock_logger):
+        """Test _send_email handles SMTP send failures"""
+        import smtplib
+
+        mock_server = Mock()
+        mock_server.send_message.side_effect = smtplib.SMTPException("Send failed")
+        mock_smtp.return_value.__enter__.return_value = mock_server
+
+        test_env = {
+            "SMTP_SERVER": "smtp.test.com",
+            "SMTP_PORT": "587",
+            "SMTP_USERNAME": "test_user",
+            "SMTP_PASSWORD": "test_pass",
+            "SMTP_FROM_EMAIL": "from@test.com",
+        }
+
+        with patch.dict(os.environ, test_env):
+            with patch(
+                "src.services.email_service.setup_logger", return_value=mock_logger
+            ):
+                service = EmailService()
+                with pytest.raises(smtplib.SMTPException, match="Send failed"):
+                    service._send_email(
+                        recipients=["test@example.com"],
+                        subject="Test Subject",
+                        body="Test Body",
+                    )
+
+    @patch("src.services.email_service.smtplib.SMTP")
     def test_send_email_file_not_found(self, mock_smtp, mock_logger):
         """Test _send_email handles missing attachment files"""
         mock_server = Mock()
