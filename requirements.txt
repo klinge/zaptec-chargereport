@@ -10,7 +10,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 pytz==2026.3.post1
 requests==2.34.2
-six==1.16.0
+six==1.17.0
 typing_extensions==4.16.0
 tzdata==2026.3
 urllib3==2.6.3
