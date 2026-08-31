@@ -5,5 +5,5 @@ responses==0.26.2
 python-dotenv==1.2.3
 autopep8==2.3.2
 black==26.3.1
-autoflake==2.3.3
+autoflake==2.4.0
 flake8==7.3.0
