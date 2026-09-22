@@ -6,9 +6,6 @@ from dotenv import load_dotenv
 from src.api.zaptec_api import _ZaptecApi
 
 
-# Simulate pandas 3.0 Copy-on-Write behaviour
-pd.options.mode.copy_on_write = True
-
 # Load environment at session start BEFORE creating API instance
 # This ensures credentials are available for session-scoped fixtures
 def pytest_configure(config):
